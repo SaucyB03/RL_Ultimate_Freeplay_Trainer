@@ -47,31 +47,32 @@ class Freeplay_Trainer : public BakkesMod::Plugin::BakkesModPlugin, public Setti
 	void onUnload() override;
 	void Render(CanvasWrapper canvas);
 	void onTick(string eventName);
-	void shotHandler();
-
 
 public:
 	void RenderSettings() override; // Uncomment if you wanna render your own tab in the settings menu
 private:
-	//Easier way to keep track of whats being saved
-	enum SaveType {
-		All = 0,
-		Shots_Only = 1,
-		Groups_Only = 2,
-	};
-
+	//Freeplay_Trainer.cpp
 	void loadPresets();
-	void savePresets(SaveType saveType);
-	bool errorCheck();
-
-	void RenderShotIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir, Quat rotation);
-	void RenderVarianceIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir);
-
+	void savePresets();
 	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
 	float DegToRad(float degrees);
 	float RotYawToRad(Rotator rot);
-	
+	Vector VecToVector(vector<float> vector);
+	Vector VecToVector(vector<vector<float>> vector, int index);
 
+	//Freplay_Trainer_Settings.cpp
+	bool ErrorCheck();
+
+	//Rendering.cpp
+	void RenderShotIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir, Quat rotation);
+	void RenderVarianceIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir);
+
+	//ShotHandling.cpp
+	void InputHandler();
+	void ShotHandler(int shotIndex);
+
+	
+	//All necessary saveable variables
 	vector<string> names;
 	vector<vector<float>> initPosAll;
 	vector<int> rel_to;
@@ -81,20 +82,23 @@ private:
 	vector<float> variance;
 	vector<bool> usingPosVar;
 	vector<int> posVarShape;
+	vector<vector<float>> cuboid;
+	vector<float> sphere;
 	bool ball_indicator = false;
 	bool line_indicator = false;
+	int cur_shot = 0;
 
 	//Temp values for indicators:
-	Vector pos;
-	Vector dir;
-	float init_speed;
-	float rel;
-	bool dirV;
-	float curVar;
-	bool posV;
-	int shape;
-	Vector cuboid = {0,0,0};
-	float sphere;
+	//Vector pos;
+	//Vector dir;
+	//float init_speed;
+	//float rel;
+	//bool dirV;
+	//float curVar;
+	//bool posV;
+	//int shape;
+	//Vector cuboid = {0,0,0};
+	//float sphere;
 	bool ballLocked;
 	bool arrowLocked;
 

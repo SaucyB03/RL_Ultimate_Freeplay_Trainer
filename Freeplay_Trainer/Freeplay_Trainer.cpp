@@ -37,7 +37,7 @@ void Freeplay_Trainer::onLoad()
 }
 
 void Freeplay_Trainer::onUnload() {
-	savePresets(All);
+	savePresets();
 }
 
 void Freeplay_Trainer::onTick(string eventName) {
@@ -55,21 +55,7 @@ void Freeplay_Trainer::onTick(string eventName) {
 
 	//Ensures that we only need to find the ball and the car when input is detected
 	if (anyPressed) {
-		shotHandler();
-	}
-}
-
-void Freeplay_Trainer::shotHandler(){
-
-	ServerWrapper server = gameWrapper->GetCurrentGameState();
-	if (!server) { return; }
-	BallWrapper ball = server.GetBall();
-	if (!ball) { return; }
-	CarWrapper car = gameWrapper->GetLocalCar();
-	if (!car) { return; }
-
-	if (inputs["XboxTypeS_DPad_Left"].pressed || inputs["One"].pressed) {
-		inputs["One"].shotIndex;
+		InputHandler();
 	}
 }
 
@@ -109,33 +95,31 @@ void Freeplay_Trainer::loadPresets() {
 
 	//posVarShape
 	posVarShape = j["posVarShape"].get<vector<int>>();
+	cuboid = j["cuboid"].get<vector<vector<float>>>();
+	sphere = j["sphere"].get<vector<float>>();
 
 	//Indices for group preset binds
 	groupIndices = j["groupIndices"].get<vector<vector<int>>>();
 	groupNames = j["groupNames"].get<vector<string>>();
 }
 
-void Freeplay_Trainer::savePresets(SaveType saveType) {
+void Freeplay_Trainer::savePresets() {
 	nlohmann::json j;
 
-	//Minimizes whats being saved to only whats necessary:
-	if(saveType == 0 || saveType == 1){
-		j["names"] = names;
-		j["position"] = initPosAll;
-		j["relation"] = rel_to;
-		j["speeds"] = speeds;
-		j["direction"] = initDir;
-		j["usingDirVar"] = usingDirVar;
-		j["variance"] = variance;
-		j["usingPosVar"] = usingPosVar;
-		j["posVarShape"] = posVarShape;
-	}
+	j["names"] = names;
+	j["position"] = initPosAll;
+	j["relation"] = rel_to;
+	j["speeds"] = speeds;
+	j["direction"] = initDir;
+	j["usingDirVar"] = usingDirVar;
+	j["variance"] = variance;
+	j["usingPosVar"] = usingPosVar;
+	j["posVarShape"] = posVarShape;
+	j["cuboid"] = cuboid;
+	j["sphere"] = sphere;
 
-
-	if (saveType == 0 || saveType == 2) {
-		j["groupIndices"] = groupIndices;
-		j["groupNames"] = groupNames;
-	}
+	j["groupIndices"] = groupIndices;
+	j["groupNames"] = groupNames;
 
 	ofstream file(gameWrapper->GetDataFolder() / "Freeplay_Trainer" / "presetscfg.json");
 	file << j.dump(4);
@@ -185,4 +169,13 @@ float Freeplay_Trainer::RotYawToRad(Rotator rot) {
 	yaw = yaw * PI / 32768;
 
 	return yaw ;
+}
+
+Vector Freeplay_Trainer::VecToVector(vector<float> vect) {
+	return { vect.at(0),vect.at(1),vect.at(2) };
+}
+
+Vector Freeplay_Trainer::VecToVector(vector<vector<float>> vect, int index) {
+	vector<float> atInd = vect.at(index);
+	return VecToVector(atInd);
 }

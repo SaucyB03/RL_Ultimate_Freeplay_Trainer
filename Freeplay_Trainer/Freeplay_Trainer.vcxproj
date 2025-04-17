@@ -129,6 +129,7 @@
     <ClCompile Include="RenderingTools\Objects\Sphere.cpp" />
     <ClCompile Include="RenderingTools\Objects\Triangle.cpp" />
     <ClCompile Include="RenderingTools\Objects\VisualCamera.cpp" />
+    <ClCompile Include="ShotHandling.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h" />

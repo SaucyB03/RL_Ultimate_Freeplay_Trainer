@@ -156,6 +156,9 @@
     <ClCompile Include="RenderingTools\Objects\VisualCamera.cpp">
       <Filter>RT\Objects\src</Filter>
     </ClCompile>
+    <ClCompile Include="ShotHandling.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui_rangeslider.h">

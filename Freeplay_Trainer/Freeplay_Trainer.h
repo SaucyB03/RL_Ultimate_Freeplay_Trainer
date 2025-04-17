@@ -4,6 +4,7 @@
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
+#include "RenderingTools/Objects/Frustum.h"
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -22,6 +23,19 @@ constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_M
 constexpr int MAX_SIZE = 16;
 constexpr int MAX_GROUP = 4;
 constexpr int NUM_KEYB = 4;
+constexpr float BALL_RADIUS = 91.25;
+constexpr float IND_ARR_RATIO = 5.12;
+
+//Referencign Haltepunkt's / AreUThreateningme's method for input handling on keyboard / dpad:
+//https://github.com/kregerl/BakkesKBMOverlay
+//https://github.com/haltepunkt/ControllerOverlay/tree/master
+struct Input {
+	int index;
+	bool pressed;
+	std::string name;
+	int shotIndex;
+};
+
 
 class Freeplay_Trainer : public BakkesMod::Plugin::BakkesModPlugin, public SettingsWindowBase // Uncomment if you wanna render your own tab in the settings menu
 {
@@ -31,7 +45,9 @@ class Freeplay_Trainer : public BakkesMod::Plugin::BakkesModPlugin, public Setti
 	//Boilerplate
 	void onLoad() override;
 	void onUnload() override;
+	void Render(CanvasWrapper canvas);
 	void onTick(string eventName);
+	void shotHandler();
 
 
 public:
@@ -48,6 +64,14 @@ private:
 	void savePresets(SaveType saveType);
 	bool errorCheck();
 
+	void RenderShotIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir, Quat rotation);
+	void RenderVarianceIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir);
+
+	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
+	float DegToRad(float degrees);
+	float RotYawToRad(Rotator rot);
+	
+
 	vector<string> names;
 	vector<vector<float>> initPosAll;
 	vector<int> rel_to;
@@ -57,6 +81,23 @@ private:
 	vector<float> variance;
 	vector<bool> usingPosVar;
 	vector<int> posVarShape;
+	bool ball_indicator = false;
+	bool line_indicator = false;
+
+	//Temp values for indicators:
+	Vector pos;
+	Vector dir;
+	float init_speed;
+	float rel;
+	bool dirV;
+	float curVar;
+	bool posV;
+	int shape;
+	Vector cuboid = {0,0,0};
+	float sphere;
+	bool ballLocked;
+	bool arrowLocked;
+
 
 	// For group Presets: Index/keyboard keybind:D-pad keybind 
 	//  1:Left | 2:Right | 3:Up | 4:Down
@@ -65,4 +106,7 @@ private:
 
 	shared_ptr<int> chosenPres = make_shared<int>(0);
 	shared_ptr<bool> enable = make_shared<bool>(false);
+
+	std::map<std::string, Input> inputs;
+
 };

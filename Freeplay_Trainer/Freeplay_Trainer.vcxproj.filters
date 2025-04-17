@@ -34,6 +34,21 @@
     <Filter Include="Plugin\src">
       <UniqueIdentifier>{33ae5c6a-718c-410e-bdb8-9c032f65c710}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RT">
+      <UniqueIdentifier>{2f7ef0b8-101f-4e02-97f6-e6d322f1c9b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\Extra">
+      <UniqueIdentifier>{4e74aac1-5350-4430-baec-93b9f0e8dfd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\Objects">
+      <UniqueIdentifier>{0355838c-b379-453c-9826-9c8b5c485498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\Objects\src">
+      <UniqueIdentifier>{9bd19bb1-c5b2-4437-a787-1b690aa165cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\Objects\header">
+      <UniqueIdentifier>{e48a5e1b-0973-45b7-8b40-3f53b41cb404}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui\imgui.cpp">
@@ -83,6 +98,63 @@
     </ClCompile>
     <ClCompile Include="Freeplay_Trainer_Settings.cpp">
       <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering.cpp">
+      <Filter>Plugin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Extra\CanvasExtensions.cpp">
+      <Filter>RT\Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Extra\RenderingAssistant.cpp">
+      <Filter>RT\Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Extra\RenderingMath.cpp">
+      <Filter>RT\Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Extra\WrapperStructsExtensions.cpp">
+      <Filter>RT\Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Chevron.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Circle.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Circle2D.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Cone.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Cube.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Cylinder.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Frustum.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Grid.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Line.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Matrix3.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Plane.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Sphere.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\Triangle.cpp">
+      <Filter>RT\Objects\src</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingTools\Objects\VisualCamera.cpp">
+      <Filter>RT\Objects\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +214,63 @@
     </ClInclude>
     <ClInclude Include="GuiBase.h">
       <Filter>Plugin\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Extra\CanvasExtensions.h">
+      <Filter>RT\Extra</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Extra\RenderingAssistant.h">
+      <Filter>RT\Extra</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Extra\RenderingMath.h">
+      <Filter>RT\Extra</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Extra\WrapperStructsExtensions.h">
+      <Filter>RT\Extra</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Chevron.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Circle.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Circle2D.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Cone.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Cube.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Cylinder.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Frustum.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Grid.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Line.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Matrix3.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Plane.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Sphere.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\Triangle.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\Objects\VisualCamera.h">
+      <Filter>RT\Objects\header</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingTools\RenderingTools.h">
+      <Filter>RT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

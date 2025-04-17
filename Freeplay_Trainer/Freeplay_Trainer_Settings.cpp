@@ -373,40 +373,90 @@ void Freeplay_Trainer::RenderSettings() {
             static vector<float> curPos = initPosAll.at(current_shot);
             static float vec3Pos[3] = { curPos.at(0), curPos.at(1), curPos.at(2) };
             ImGui::DragFloat3("Initial Position", vec3Pos, 1);
+            pos = { vec3Pos[0],vec3Pos[1],vec3Pos[2] };
 
             static int current_relative = rel_to.at(current_shot);
             ImGui::Combo("Position Relative to What?", &current_relative, "Center\0Goal\0Car\0\0");
+            rel = current_relative;
+            if (current_relative == 2) {
+                static bool ballLock = false;
+                if (ImGui::Checkbox("Lock All Ball Axis' To Car", &ballLock)) {
+                    ballLocked = ballLock;
+                }
+                static bool arrowLock = false;
+                if (ImGui::Checkbox("Lock Arrow Axis To Car", &arrowLock)) {
+                    arrowLocked = arrowLock;
+                }
+            }
+
 
             ImGui::Separator();
             ImGui::Text("Initial Velocity:");
 
             static float speed = speeds.at(current_shot);
             ImGui::DragFloat("Speed", &speed, 0.5f, 0.0f, 250.0f);
+            init_speed = speed;
 
             static vector<float> curDir = initDir.at(current_shot);
             static float vec3Dir[3] = { curDir.at(0), curDir.at(1), curDir.at(2) };
-            ImGui::DragFloat3("Direction", vec3Dir, 1);
-
-            ///*static bool ind = false;
-            //ImGui::Checkbox("Show Indicator", &ind);*/
-
-            ImGui::Separator();
-            ImGui::Text("Variance:");
-
             static bool dir_ind = usingDirVar.at(current_shot);
-            ImGui::Checkbox("Directional Variance", &dir_ind);
-
             static float var = variance.at(current_shot);
-            if (dir_ind) {
-                ImGui::DragFloat("Directional Variance", &var, 0.5f, 0.0f, 100.0f);
-            }
-
             static bool pos_ind = usingPosVar.at(current_shot);
+            static int cur_shape = posVarShape.at(current_shot);
+
+
+            if (speed != 0.0) {
+                ImGui::DragFloat3("Direction", vec3Dir, 1);
+                ImGui::Separator();
+
+                ImGui::Text("Variance:");
+
+                ImGui::BeginGroup();
+                if (ImGui::Checkbox("Directional Variance", &dir_ind)) {
+                    dirV = dir_ind;
+                }
+
+                if (dir_ind) {
+                    ImGui::DragFloat("Directional Variance (Degrees)", &var, 0.5f, 1.0f, 25.0f);
+                    curVar = var;
+                }
+                ImGui::EndGroup();
+
+                ImGui::SameLine();
+
+            }
+            dir = { vec3Dir[1], vec3Dir[1], vec3Dir[2] };
+
+            ImGui::BeginGroup();
+            
             ImGui::Checkbox("Positional Variance", &pos_ind);
 
-            static int cur_shape = posVarShape.at(current_shot);
             if (pos_ind) {
-                ImGui::Combo("Position Relative to What?", &cur_shape, "Cuboid\0Sphere\0\0");
+                ImGui::Combo("Bounding Shape For Random Spawn", &cur_shape, "Cuboid\0Sphere\0\0");
+                shape = cur_shape;
+                if (cur_shape == 0) {
+                    static float vec3Dir[3] = { 1,1,1 };
+                    ImGui::DragFloat3("Cuboid Size", vec3Dir, 1);
+                }
+                else {
+                    static float radius = BALL_RADIUS;
+                    ImGui::DragFloat("Sphere Radius", &radius);
+                }
+            }
+            ImGui::EndGroup();
+
+            ImGui::Separator();
+
+            static bool ball_ind = false;
+            static bool line_ind = false;
+            if (ImGui::Checkbox("Show Ball Indicator", &ball_ind)) {
+                ball_indicator = ball_ind;
+            }
+            if (ball_ind) {
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Show Line Indicator", &line_ind)) {
+                    line_indicator = line_ind;
+                }
             }
 
             if (ImGui::Button("Save")) {

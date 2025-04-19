@@ -6,16 +6,21 @@
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
 #include "RenderingTools/Objects/Frustum.h"
 #include "json.hpp"
+
 using json = nlohmann::json;
 
 
 #include <fstream>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 #include <cstring>
 #include <iostream>
 
 #include "version.h"
+
+#define NOTIFIER_KEY_PRESETS "ShotBind"
 
 using namespace std;
 
@@ -25,6 +30,8 @@ constexpr int MAX_GROUP = 4;
 constexpr int NUM_KEYB = 4;
 constexpr float BALL_RADIUS = 91.25;
 constexpr float IND_ARR_RATIO = 5.12;
+constexpr float KPH_TO_BALL_VEL = 27.90698;
+constexpr float PI = 3.1415;
 
 //Referencign Haltepunkt's / AreUThreateningme's method for input handling on keyboard / dpad:
 //https://github.com/kregerl/BakkesKBMOverlay
@@ -34,6 +41,13 @@ struct Input {
 	bool pressed;
 	std::string name;
 	int shotIndex;
+};
+
+struct RelativeOffset {
+	Vector offPos;
+	Vector offDir;
+	Vector unitVec;
+	Quat rotation;
 };
 
 
@@ -54,11 +68,7 @@ private:
 	//Freeplay_Trainer.cpp
 	void loadPresets();
 	void savePresets();
-	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
-	float DegToRad(float degrees);
-	float RotYawToRad(Rotator rot);
-	Vector VecToVector(vector<float> vector);
-	Vector VecToVector(vector<vector<float>> vector, int index);
+	void updateKeybinds();
 
 	//Freplay_Trainer_Settings.cpp
 	bool ErrorCheck();
@@ -68,8 +78,21 @@ private:
 	void RenderVarianceIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir);
 
 	//ShotHandling.cpp
-	void InputHandler();
+	void InputHandler(std::vector<std::string> params);
 	void ShotHandler(int shotIndex);
+	void CheckBallLock(BallWrapper ball);
+	Vector VaryInitialDir();
+	Vector VaryInitialPos();
+
+	//Conversions_Calculations.cpp
+	RelativeOffset CalculateOffsets(CarWrapper car, int shotindex);
+	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
+	float DegToRad(float degrees);
+	float RotYawToRad(Rotator rot);
+	Vector VecToVector(vector<float> vector);
+	Vector VecToVector(vector<vector<float>> vector, int index);
+	Vector2F VecToVector2(vector<float> vector);
+	Vector2F VecToVector2(vector<vector<float>> vector, int index);
 
 	
 	//All necessary saveable variables
@@ -88,19 +111,12 @@ private:
 	bool line_indicator = false;
 	int cur_shot = 0;
 
-	//Temp values for indicators:
-	//Vector pos;
-	//Vector dir;
-	//float init_speed;
-	//float rel;
-	//bool dirV;
-	//float curVar;
-	//bool posV;
-	//int shape;
-	//Vector cuboid = {0,0,0};
-	//float sphere;
 	bool ballLocked;
 	bool arrowLocked;
+
+	//When true locks ball in place
+	bool hold_ball = false;
+	int cur_shot_index = 0;
 
 
 	// For group Presets: Index/keyboard keybind:D-pad keybind 

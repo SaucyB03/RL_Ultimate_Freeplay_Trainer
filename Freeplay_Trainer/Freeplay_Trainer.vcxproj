@@ -91,6 +91,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Conversions_Calculations.cpp" />
     <ClCompile Include="Rendering.cpp" />
     <ClCompile Include="Freeplay_Trainer_Settings.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />

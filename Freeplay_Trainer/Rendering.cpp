@@ -9,59 +9,31 @@ void Freeplay_Trainer::Render(CanvasWrapper canvas) {
 	if (!camera) { return; }
 	CarWrapper car = gameWrapper->GetLocalCar();
 	if (!car) { return; }
+
 	RT::Frustum frustum(canvas, RotatorToQuat(camera.GetRotation()), camera.GetLocation());
-
-	Vector carLoc = car.GetLocation();
-	Rotator carRot = car.GetRotation();
-
-
-	canvas.SetColor(LinearColor(255.0, 255.0, 0.0, 255.0));
-
-	Vector offsetPos = VecToVector(initPosAll,cur_shot);
-	Vector offsetDir = VecToVector(initDir, cur_shot);
-	Quat rotation(1, 0, 0, 0);
-	if (rel_to.at(cur_shot) == 1) {
-		if (carLoc.Y >= 0) {
-			offsetPos.Y += 5150;
-		}
-		else {
-			offsetPos.Y -= 5150;
-		}
-	}
-	else if (rel_to.at(cur_shot) == 2) {
-		offsetPos = ConvertWorldToLocal(carLoc, carRot, VecToVector(initPosAll, cur_shot), ballLocked);
-		offsetDir = ConvertWorldToLocal(offsetPos, carRot, VecToVector(initDir, cur_shot), arrowLocked);
-		rotation = RotatorToQuat(carRot);
-	}
+	RelativeOffset rel = CalculateOffsets(car, cur_shot);
 
 	//Render applicable indicators:
-	RenderShotIndicators(canvas, camera, frustum, offsetPos, offsetDir, rotation);
-	
-	//Changing color to distinguish indicators better
+	canvas.SetColor(LinearColor(255.0, 255.0, 0.0, 255.0));
+	RenderShotIndicators(canvas, camera, frustum, rel.offPos, rel.offDir, rel.rotation);
 	canvas.SetColor(LinearColor(255.0, 0, 0.0, 255.0));
-
-	RenderVarianceIndicators(canvas, camera, frustum, offsetPos, offsetDir);
+	RenderVarianceIndicators(canvas, camera, frustum, rel.offPos, rel.offDir);
 }
 
 void Freeplay_Trainer::RenderShotIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, Vector offsetPos, Vector offsetDir, Quat rotation) {
-
 	if (ball_indicator) {
+		//Display Ball
 		RT::Sphere b(offsetPos, 15);
 		RT::Sphere ball(offsetPos, rotation, BALL_RADIUS);
 		ball.Draw(canvas, frustum, camera.GetLocation(), 16);
 	}
 
 	if (line_indicator) {
-		// Calc Arrow
-		//Vector offsetDir = dir + offsetPos;
-		Vector dirRad = { offsetDir.X, offsetDir.Y, offsetDir.Z };
-		Vector unitVec = { sin(dirRad.X), cos(dirRad.Y), sin(dirRad.Z) };
-		Vector endPos = (unitVec * speeds.at(cur_shot) * IND_ARR_RATIO) + offsetPos;
-
-		//Display GUI
-		RT::Line line(offsetPos, endPos);
+		//Display Arrow
+		RT::Line line(offsetPos, offsetDir);
 		line.DrawWithinFrustum(canvas, frustum);
-		RT::Cone point(endPos, unitVec, 30, 50);
+		Vector unitVec = (offsetDir - offsetPos).getNormalized();
+		RT::Cone point(offsetDir, unitVec, 30, 50);
 		point.Draw(canvas, frustum);
 	}
 }
@@ -88,7 +60,7 @@ void Freeplay_Trainer::RenderVarianceIndicators(CanvasWrapper canvas, CameraWrap
 	if (usingPosVar.at(cur_shot)) {
 		if (posVarShape.at(cur_shot) == 0) {
 			//Create and draw the cuboid
-			RT::Cube varCube(offsetPos, Quat(1,1,0,0), VecToVector(cuboid,cur_shot));
+			RT::Cube varCube(offsetPos, Quat(1,1,0,0), VecToVector(cuboid, cur_shot));
 			varCube.Draw(canvas, frustum);
 		}
 		else {

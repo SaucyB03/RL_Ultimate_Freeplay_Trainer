@@ -2,7 +2,7 @@
 #include "Freeplay_Trainer.h"
 
 void Freeplay_Trainer::RenderSettings() {
-    CVarWrapper enabled = cvarManager->getCvar("enable_plugin");
+    CVarWrapper enabled = cvarManager->getCvar("enable_UTF_plugin");
     bool enable_val = enabled.getBoolValue();
     if (ImGui::Checkbox("Enable Plugin", &enable_val)) {
         enabled.setValue(enable_val);
@@ -29,10 +29,9 @@ void Freeplay_Trainer::RenderSettings() {
             static bool edited[4] = { false,false,false,false };
             static string key_names[4] = { "Left/1", "Right/2", "Up/3", "Down/4" };
 
-
+            
             ImGui::Text("Customize Up To 4 Unique D-Pad/1234 Presets!");
             ImGui::Separator();
-
             
             //Preset 1:
             const string preset1_name = groupNames.at(0);
@@ -50,7 +49,7 @@ void Freeplay_Trainer::RenderSettings() {
             ImGui::PushItemWidth(100);
             
             //Preset #1 Options:
-            static vector<int> p1_binds = groupIndices.at(0);
+            vector<int> p1_binds = groupIndices.at(0);
             static int shot1_binds[NUM_KEYB] = { p1_binds[0], p1_binds[1], p1_binds[2], p1_binds[3] };
             
             //Iterate through the 4 combo options
@@ -90,7 +89,7 @@ void Freeplay_Trainer::RenderSettings() {
                 }
             }
             else {
-                ImGui::Text("Make sure to save your changes! Then you can select this preset!");
+                ImGui::Text( "Make sure to save your changes! Then you can select this preset!");
             }
 
             if (ImGui::Button("Save Preset 1")) {
@@ -101,6 +100,7 @@ void Freeplay_Trainer::RenderSettings() {
                 groupIndices.at(0) = { shot1_binds[0], shot1_binds[1], shot1_binds[2], shot1_binds[3] };
 
                 savePresets();
+
                 LOG("Preset Successfully Saved!");
 
                 edited[0] = false;
@@ -166,7 +166,7 @@ void Freeplay_Trainer::RenderSettings() {
                 }
             }
             else {
-                ImGui::Text("Make sure to save your changes! Then you can select this preset!");
+                ImGui::Text( "Make sure to save your changes! Then you can select this preset!");
             }
 
             if (ImGui::Button("Save Preset 2")) {
@@ -242,7 +242,7 @@ void Freeplay_Trainer::RenderSettings() {
                 }
             }
             else {
-                ImGui::Text("Make sure to save your changes! Then you can select this preset!");
+                ImGui::Text( "Make sure to save your changes! Then you can select this preset!");
             }
 
             if (ImGui::Button("Save Preset 3")) {
@@ -334,10 +334,10 @@ void Freeplay_Trainer::RenderSettings() {
                 edited[3] = false;
 
             }
-
+            
             ImGui::EndTabItem();
         }
-
+        
         if (ImGui::BeginTabItem("Individual Shot Editor"))
         {
             
@@ -352,22 +352,22 @@ void Freeplay_Trainer::RenderSettings() {
                     const bool is_selected = (current_shot == n);
                     if (ImGui::Selectable(names.at(n).c_str(), is_selected))
                         current_shot = n;
-                        cur_shot = n;
 
                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                     if (is_selected)
                         ImGui::SetItemDefaultFocus();
                 }
                 ImGui::EndCombo();
+                cur_shot = current_shot;
             }
 
             ImGui::Separator();
             ImGui::Text("Name of Preset:");
 
             char new_name[128];
-            if (ImGui::InputTextWithHint("##textinput", names.at(current_shot).c_str(), new_name, IM_ARRAYSIZE(new_name), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ImGui::InputTextWithHint("##textinput", names.at(cur_shot).c_str(), new_name, IM_ARRAYSIZE(new_name), ImGuiInputTextFlags_EnterReturnsTrue)) {
                 if (new_name[0] != '\0') {
-                    names.at(current_shot) = new_name;
+                    names.at(cur_shot) = new_name;
                     edit = true;
                 }
             }
@@ -375,25 +375,25 @@ void Freeplay_Trainer::RenderSettings() {
             ImGui::Separator();
             ImGui::Text("Initial Position:");
 
-            vector<float> curPos = initPosAll.at(current_shot);
+            vector<float> curPos = initPosAll.at(cur_shot);
             float vec3Pos[3] = { curPos.at(0), curPos.at(1), curPos.at(2) };
             if (ImGui::DragFloat3("Initial Position", vec3Pos, 1)) {
-                initPosAll.at(current_shot) = { vec3Pos[0],vec3Pos[1],vec3Pos[2] };
+                initPosAll.at(cur_shot) = { vec3Pos[0],vec3Pos[1],vec3Pos[2] };
                 edit = true;
             }
 
-            int current_relative = rel_to.at(current_shot);
+            int current_relative = rel_to.at(cur_shot);
             if (ImGui::Combo("Position Relative to What?", &current_relative, "Center\0Goal\0Car\0\0")) {
-                rel_to.at(current_shot) = current_relative;
+                rel_to.at(cur_shot) = current_relative;
                 edit = true;
             }
 
             if (current_relative == 2) {
-                bool ballLock = false;
+                static bool ballLock = false;
                 if (ImGui::Checkbox("Lock All Ball Axis To Car", &ballLock)) {
                     ballLocked = ballLock;
                 }
-                bool arrowLock = false;
+                static bool arrowLock = false;
                 if (ImGui::Checkbox("Lock Arrow Axis To Car", &arrowLock)) {
                     arrowLocked = arrowLock;
                 }
@@ -403,20 +403,20 @@ void Freeplay_Trainer::RenderSettings() {
             ImGui::Separator();
             ImGui::Text("Initial Velocity:");
 
-            float speed = speeds.at(current_shot);
-            if (ImGui::DragFloat("Speed", &speed, 0.5f, 0.0f, 250.0f)) {
-                speeds.at(current_shot) = speed;
+            float speed = speeds.at(cur_shot);
+            if (ImGui::DragFloat("Speed", &speed, 0.5f, 0.0f, 215.0f)) {
+                speeds.at(cur_shot) = speed;
                 edit = true;
             }
 
-            vector<float> curDir = initDir.at(current_shot);
-            float vec3Dir[3] = { curDir.at(0), curDir.at(1), curDir.at(2) };
-            bool dir_ind = usingDirVar.at(current_shot);
-            float var = variance.at(current_shot);
+            vector<float> curDir = initDir.at(cur_shot);
+            float vecDir[2] = { curDir.at(0), curDir.at(1)};
+            bool dir_ind = usingDirVar.at(cur_shot);
+            float var = variance.at(cur_shot);
 
             if (speed != 0.0) {
-                if (ImGui::DragFloat3("Direction", vec3Dir, 1)) {
-                    initDir.at(current_shot) = { vec3Dir[0],vec3Dir[1],vec3Dir[2] };
+                if (ImGui::DragFloat2("Direction (Degrees)", vecDir, 0.5f,-360.0f, 360.0f)) {
+                    initDir.at(cur_shot) = { vecDir[0], vecDir[1]};
                     edit = true;
                 }
                 ImGui::Separator();
@@ -425,14 +425,14 @@ void Freeplay_Trainer::RenderSettings() {
 
                 ImGui::BeginGroup();
                 if (ImGui::Checkbox("Directional Variance", &dir_ind)) {
-                    usingDirVar.at(current_shot) = dir_ind;
+                    usingDirVar.at(cur_shot) = dir_ind;
                     edit = true;
                 }
 
                 if (dir_ind) {
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() * 0.5f);
                     if (ImGui::DragFloat("Directional Variance (Degrees)", &var, 0.5f, 1.0f, 25.0f)) {
-                        variance.at(current_shot) = var;
+                        variance.at(cur_shot) = var;
                         edit = true;
                     }
                 }
@@ -444,31 +444,31 @@ void Freeplay_Trainer::RenderSettings() {
 
             ImGui::BeginGroup();
             
-            bool pos_ind = usingPosVar.at(current_shot);
+            bool pos_ind = usingPosVar.at(cur_shot);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() * 0.5f);
             if (ImGui::Checkbox("Positional Variance", &pos_ind)) {
-                usingPosVar.at(current_shot) = pos_ind;
+                usingPosVar.at(cur_shot) = pos_ind;
                 edit = true;
             }
 
-            int cur_shape = posVarShape.at(current_shot);
+            int cur_shape = posVarShape.at(cur_shot);
             if (pos_ind) {
                 if (ImGui::Combo("Bounding Shape For Random Spawn", &cur_shape, "Cuboid\0Sphere\0\0")) {
-                    posVarShape.at(current_shot) = cur_shape;
+                    posVarShape.at(cur_shot) = cur_shape;
                     edit = true;
                 }
                 if (cur_shape == 0) {
-                    vector<float> curCube = cuboid.at(current_shot);
-                    float vec3Dir[3] = { curCube.at(0), curCube.at(1), curCube.at(2) };
-                    if (ImGui::DragFloat3("Cuboid Size", vec3Dir, 1)) {
-                        cuboid.at(current_shot) = { vec3Dir[0],vec3Dir[1],vec3Dir[2] };
+                    vector<float> curCube = cuboid.at(cur_shot);
+                    float vecCube[3] = { curCube.at(0), curCube.at(1), curCube.at(2) };
+                    if (ImGui::DragFloat3("Cuboid Size", vecCube, 1)) {
+                        cuboid.at(cur_shot) = { vecCube[0],vecCube[1],vecCube[2] };
                         edit = true;
                     }
                 }
                 else {
-                    float radius = sphere.at(current_shot);
+                    float radius = sphere.at(cur_shot);
                     if (ImGui::DragFloat("Sphere Radius", &radius, 0.5f, BALL_RADIUS, 400.0f)) {
-                        sphere.at(current_shot) = radius;
+                        sphere.at(cur_shot) = radius;
                         edit = true;
                     }
                 }

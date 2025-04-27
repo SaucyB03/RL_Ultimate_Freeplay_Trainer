@@ -13,6 +13,7 @@ void Freeplay_Trainer::Render(CanvasWrapper canvas) {
 	RT::Frustum frustum(canvas, RotatorToQuat(camera.GetRotation()), camera.GetLocation());
 	RelativeOffset* rel = CalculateOffsets(car, cur_shot, true);
 
+
 	//Render applicable indicators:
 	RenderShotIndicators(canvas, camera, frustum, *rel);
 	RenderVarianceIndicators(canvas, camera, frustum, *rel);
@@ -40,11 +41,11 @@ void Freeplay_Trainer::RenderVarianceIndicators(CanvasWrapper canvas, CameraWrap
 	if (usingDirVar.at(cur_shot) && dirVarInd) {
 		//calc start position for cone
 
-		Vector startPos = (rel.unitVec * speeds.at(cur_shot) * IND_ARR_RATIO/2) + rel.offPos;
+		Vector startPos = (rel.unitVec * cur_speed * IND_ARR_RATIO/2) + rel.offPos;
 
 		//Convert angle to cone height
 		float vRad = DegToRad(variance.at(cur_shot));
-		float l = speeds.at(cur_shot) * IND_ARR_RATIO / 2;
+		float l = cur_speed * IND_ARR_RATIO / 2;
 		float h = l*tan(vRad);
 
 		//Create and Draw Cone

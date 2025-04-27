@@ -2,55 +2,45 @@
 #include "Freeplay_Trainer.h"
 
 //Calculations
-RelativeOffset* Freeplay_Trainer::CalculateOffsets(CarWrapper car, int shotindex, bool isRender) {
+
+// Determines the position of the ball and direction based of selected settings
+RelativeOffset* Freeplay_Trainer::CalculateOffsets(CarWrapper car, int shotIndex, bool isRender) {
+	cur_speed = speeds.at(shotIndex);
+
 	Vector carLoc = car.GetLocation();
 	Rotator carRot = car.GetRotation();
 
 	//Convert types for calculations
-	Vector offsetPos = VecToVector(initPosAll, shotindex);
-	Vector2F dirRad = VecToVector2(initDir, shotindex);
+	Vector offsetPos = VecToVector(initPosAll, shotIndex);
+	Vector2F dirRad = VecToVector2(initDir, shotIndex);
 	dirRad.X = DegToRad(dirRad.X);
 	dirRad.Y = DegToRad(dirRad.Y);
 	Vector unitVec = { cos(dirRad.X) * cos(dirRad.Y), sin(dirRad.X) * cos(dirRad.Y), sin(dirRad.Y) };
-	Vector offsetDir = (unitVec * speeds.at(shotindex) * IND_ARR_RATIO) + offsetPos;
+	Vector offsetDir = unitVec;
 
 	Quat rotation(1, 0, 0, 0);
 	
 	RelativeOffset* rel = new RelativeOffset({ offsetPos, offsetDir, unitVec, rotation });
 
-	if (!isRender && usingPosVar.at(shotindex)) {
-		VaryInitialPos(*rel, shotindex);
+	if (!isRender && usingPosVar.at(shotIndex)) {
+		VaryInitialPos(*rel, shotIndex);
 	}
 
-	//Update the position early, so its defined for shootAt even when relative
-	if (rel_to.at(shotindex) == 1) {
-		if (carLoc.Y >= 0) {
-			rel->offPos.Y += 5150;
-			rel->offDir = (unitVec * speeds.at(shotindex) * IND_ARR_RATIO) + offsetPos;
-		}
-		else {
-			rel->offPos.Y -= 5150;
-			rel->offDir = (unitVec * speeds.at(shotindex) * -IND_ARR_RATIO) + offsetPos;
-		}
-
-	}
+	float* sign = MirrorHandler(*rel, car, shotIndex);
 	
-	if (dirMode.at(shotindex)) {
-		CalcShootAt(*rel, car, shotindex);
+	// Calculates trajectory to the selected object
+	if (dirMode.at(shotIndex)) {
+		CalcShootAt(*rel, car, sign, shotIndex);
+
 	}
-	if (rel_to.at(cur_shot) == 2) {
-		//Updates positions to be a child of the car (locks it to the car)
-		if (isRender) {
-			rel->offPos = ConvertWorldToLocal(carLoc, carRot, offsetPos, arrowLocked);
-			rel->offDir = ConvertWorldToLocal(carLoc, carRot, offsetDir, arrowLocked);
-		}
-		else {
-			rel->offPos = ConvertWorldToLocal(carLoc, carRot, rel->offPos, arrowLocked);
-			rel->offDir = ConvertWorldToLocal(carLoc, carRot, rel->offDir, arrowLocked);
-		}
-		rel->unitVec = ConvertWorldToLocal(carLoc, carRot, unitVec, arrowLocked) - carLoc;
+	else if (rel_to.at(shotIndex) == 2) {
+		//Updates direction to be a child of the car (locks it to the car)
+		rel->unitVec = ConvertWorldToLocal(carLoc, carRot, rel->unitVec, arrowLocked) - carLoc;
 		rel->rotation = RotatorToQuat(carRot);
 	}
+	rel->offDir = (rel->unitVec * cur_speed * IND_ARR_RATIO) + rel->offPos;
+
+
 	rel->offPos.Z += BALL_RADIUS;
 	rel->offDir.Z += BALL_RADIUS;
 	
@@ -88,9 +78,28 @@ Vector Freeplay_Trainer::ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector
 }
 
 Vector Freeplay_Trainer::CalcKinematics(Vector start, CarWrapper car, int shotIndex) {
+
+	Vector carLoc = car.GetLocation();
+	Rotator carRot = car.GetRotation();
 	// Based off the cars current velocity, determine where it will be in the given time:
 	Vector carVel = car.GetVelocity();
-	Vector futureCarLoc = carVel * (timeTo.at(shotIndex)+0.75) + car.GetLocation();
+	Vector carVelN = carVel.getNormalized();
+
+	//If car isn't moving, we don't want normal vector pointing in a direction
+	if (carVel.X < 1) {
+		carVelN.X = 0;
+	}
+	if (carVel.Y < 1) {
+		carVelN.Y = 0;
+	}
+	if (carVel.Z < 1) {
+		carVelN.Z = 0;
+	}
+
+	Vector carLeadPos = {leadOff.at(shotIndex),0,0 };
+	carLeadPos = ConvertWorldToLocal(carLoc, carRot, carLeadPos, false);
+
+	Vector futureCarLoc = carVelN * timeTo.at(shotIndex) + carLeadPos;
 
 	//Calculate the rest normally:
 	return CalcKinematics(start, futureCarLoc, shotIndex);
@@ -106,39 +115,36 @@ Vector Freeplay_Trainer::CalcKinematics(Vector start, Vector end, int shotIndex)
 	return { vx, vy, vz};
 }
 
-void Freeplay_Trainer::CalcShootAt(RelativeOffset& rel, CarWrapper car, int shot_index) {
+void Freeplay_Trainer::CalcShootAt(RelativeOffset& rel, CarWrapper car, float* sign, int shotIndex) {
 	Vector dir = {};
 	//Adjusts for the fact that I changed z == 0 to be z == BALL_RADIUS so ball doesnt clip
 	Vector posAdj = rel.offPos + Vector({0, 0, -BALL_RADIUS});
-	if (shootAt.at(shot_index) == 0) {
-		dir = CalcKinematics(posAdj, car.GetLocation(), shot_index);
+
+	if (shootAt.at(shotIndex) == 0) {
+		//Shoot at center of car
+		dir = CalcKinematics(posAdj, car.GetLocation(), shotIndex);
 	}
-	else if(shootAt.at(shot_index) == 1){
-		dir = CalcKinematics(posAdj, car, shot_index);
+	else if(shootAt.at(shotIndex) == 1){
+		//Shoot infront of car
+		dir = CalcKinematics(posAdj, car, shotIndex);
 	}
-	else if (shootAt.at(shot_index) == 2) {
-		if (car.GetLocation().Y >= 0) {
-			dir = CalcKinematics(posAdj, {0,5120,642.775/2}, shot_index);
-		}
-		else {
-			dir = CalcKinematics(posAdj, { 0,-5120,642.775 / 2 }, shot_index);
-		}
+	else if (shootAt.at(shotIndex) == 2) {
+		//Shoot at goal
+		dir = CalcKinematics(posAdj, {0,sign[1]*FIELD_LENGTH,642.775/2}, shotIndex);
+
+		LOG("sign: (" + to_string(sign[0]) + ", " + to_string(sign[1]) + ")" + "| y pos: "+to_string(sign[1] * FIELD_LENGTH));
+
 		
 	}
 	else {
-		if (car.GetLocation().Y >= 0) {
-			dir = CalcKinematics(posAdj, { 0,5120,2044 / 2 }, shot_index);
-		}
-		else {
-			dir = CalcKinematics(posAdj, { 0,-5120,2044 / 2 }, shot_index);
-		}
+		//Shoot at Backboard
+		dir = CalcKinematics(posAdj, { 0,sign[1]*FIELD_LENGTH,2044 / 2 }, shotIndex);
 	}
 
 
 	rel.unitVec = dir.getNormalized();
 	
-	speeds.at(shot_index) = dir.magnitude() / KPH_TO_BALL_VEL;
-	rel.offDir = (dir / KPH_TO_BALL_VEL * IND_ARR_RATIO) + rel.offPos;
+	cur_speed = dir.magnitude() / KPH_TO_BALL_VEL;
 }
 
 
@@ -150,12 +156,10 @@ float Freeplay_Trainer::RotYawToRad(Rotator rot) {
 	float yaw = rot.Yaw;
 
 	if (yaw < 0) {
-		yaw += (2 * 32768);
+		yaw += (2 * PI_ROT);
 	}
 
-	yaw = yaw * PI / 32768;
-
-	LOG("yaw: " + to_string(yaw) + " orig: " + to_string(rot.Yaw));
+	yaw = yaw * PI / PI_ROT;
 
 	return yaw;
 }

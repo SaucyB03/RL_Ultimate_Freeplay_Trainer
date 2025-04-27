@@ -7,6 +7,8 @@
 #include "RenderingTools/Objects/Frustum.h"
 #include "json.hpp"
 
+#include "constants.h"
+
 using json = nlohmann::json;
 
 
@@ -22,16 +24,7 @@ using json = nlohmann::json;
 #define NOTIFIER_KEY_PRESETS "ShotBind"
 
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
-constexpr int MAX_SIZE = 16;
-constexpr int MAX_GROUP = 4;
-constexpr int NUM_KEYB = 4;
-constexpr float BALL_RADIUS = 91.25;
-constexpr float IND_ARR_RATIO = 5.12;
-constexpr float KPH_TO_BALL_VEL = 27.90698;
-constexpr float ACCOUNT_FOR_BELL_CURVE = 5;
-constexpr float PI = 3.1415;
-constexpr float GRAVITY = -650;
-constexpr int CM_TO_M = 100;
+
 
 using namespace std;
 
@@ -73,13 +66,14 @@ private:
 	void CheckBallLock(BallWrapper ball);
 	void VaryInitialDir(RelativeOffset& rel, int shotIndex);
 	void VaryInitialPos(RelativeOffset& rel, int shotIndex);
+	float* MirrorHandler(RelativeOffset& rel, CarWrapper car, int shotIndex);
 
 	//Conversions_Calculations.cpp
-	RelativeOffset* CalculateOffsets(CarWrapper car, int shotindex, bool isRender);
+	RelativeOffset* CalculateOffsets(CarWrapper car, int shotIndex, bool isRender);
 	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
 	Vector CalcKinematics(Vector start, Vector end, int shotIndex);
 	Vector CalcKinematics(Vector start, CarWrapper car, int shotIndex);
-	void CalcShootAt(RelativeOffset& rel, CarWrapper car, int shotIndex);
+	void CalcShootAt(RelativeOffset& rel, CarWrapper car, float* sign, int shotIndex);
 	float DegToRad(float degrees);
 	float RotYawToRad(Rotator rot);
 	Vector VecToVector(vector<float> vector);
@@ -96,11 +90,13 @@ private:
 	vector<vector<float>> initPosAll;
 	vector<int> rel_to;
 	vector<float> speeds;
+	vector<bool> addVel;
 	vector<bool> dirMode;
 	vector<int> shootAt;
 	vector<float> timeTo;
-	vector<float> leadTime;
+	vector<float> leadOff;
 	vector<vector<float>> initDir;
+	vector<vector<int>> mirror;
 	vector<bool> usingDirVar;
 	vector<float> variance;
 	vector<bool> usingPosVar;
@@ -117,7 +113,10 @@ private:
 	bool arrowLocked = false;
 	bool freeze = false;
 
+	//Temp variables during run (avoids overwriting saved variables)
+	Vector targetPos = {0,0,0};
 	int cur_shot = 0;
+	float cur_speed = 0.0f;
 
 
 	//When true locks ball in place

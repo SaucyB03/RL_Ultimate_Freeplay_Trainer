@@ -36,19 +36,18 @@ void Freeplay_Trainer::ShotHandler(int shotIndex) {
 	CarWrapper car = gameWrapper->GetLocalCar();
 	if (!car) { return; }
 
-	//Retrieve position + speed for ball
-	vector<float> loc = initPosAll.at(shotIndex);
-	Vector ballLoc = { loc.at(0),loc.at(1),loc.at(2) };
 
-	float speed = speeds.at(shotIndex) * KPH_TO_BALL_VEL;
-
-	if (speed != 0) {
+	if (dirMode.at(shotIndex) == 0 || cur_speed != 0) {
 		//Calculates offsets: includes calculating variance
 		RelativeOffset *rel = CalculateOffsets(car, shotIndex, false);
 		VaryInitialDir(*rel, shotIndex);
 
 		ball.SetLocation(rel->offPos);
-		ball.SetVelocity(rel->unitVec * speed);
+		Vector ballVel = rel->unitVec * cur_speed * KPH_TO_BALL_VEL;
+		if (addVel.at(shotIndex)) {
+			ballVel += car.GetVelocity();
+		}
+		ball.SetVelocity(ballVel);
 		ball.SetAngularVelocity({ 0,0,0 }, false);
 		
 	}
@@ -78,8 +77,7 @@ void Freeplay_Trainer::VaryInitialDir(RelativeOffset& rel, int shotIndex) {
 	float randAngle = DegToRad(getRandFloat(-varAngle, varAngle));
 	float randRad = getRandFloat(-2 * PI, 2 * PI);
 
-	float newRadius = speeds.at(shotIndex) * IND_ARR_RATIO * tan(randAngle);
-	LOG("angle: " + to_string(randAngle) + "radian: " + to_string(randRad) +  "radius: " + to_string(newRadius));
+	float newRadius = cur_speed * IND_ARR_RATIO * tan(randAngle);
 
 	//Define orthogonal plane for variance circle
 	Vector unitVec = rel.unitVec.clone();
@@ -102,30 +100,89 @@ void Freeplay_Trainer::VaryInitialPos(RelativeOffset& rel, int shotIndex) {
 			float y[2] = { -cuboid.at(shotIndex).at(1) / 2,cuboid.at(shotIndex).at(1) / 2 };
 			float z[2] = { -cuboid.at(shotIndex).at(2) / 2,cuboid.at(shotIndex).at(2) / 2 };
 
-			if (x[0] < -4096 + BALL_RADIUS) {
-				x[0] = -4096 + BALL_RADIUS;
-			}
-			if (x[1] > 4096 - BALL_RADIUS) {
-				x[1] = 4096 - BALL_RADIUS;
-			}
-			if (y[0] < -5120 + BALL_RADIUS) {
-				y[0] = -5120 + BALL_RADIUS;
-			}
-			if (y[1] > 5120 - BALL_RADIUS) {
-				y[1] = 5120 - BALL_RADIUS;
-			}
-			if (z[0] < BALL_RADIUS) {
-				z[0] = BALL_RADIUS;
-			}
-			if (z[1] > 2044 - BALL_RADIUS) {
-				z[1] = 2044 - BALL_RADIUS;
-			}
 
 			Vector randOff = { getRandFloat(x[0], x[1]), getRandFloat(y[0], y[1]), getRandFloat(z[0], z[1]) };
 
 			rel.offPos += randOff;
-			rel.offDir += randOff;
-
 		}
 	}
+}
+
+float* Freeplay_Trainer::MirrorHandler(RelativeOffset& rel, CarWrapper car, int shotIndex) {
+
+	float* sign = new float[2];
+	sign[0] = 1;
+	sign[1] = 1;
+
+	Vector carLoc = car.GetLocation();
+	Rotator carRot = car.GetRotation();
+
+	if (mirror.at(shotIndex).at(0) == 0 && mirror.at(shotIndex).at(1) == 0) {
+		if (rel_to.at(shotIndex) == 2) {
+			rel.offPos = ConvertWorldToLocal(carLoc, carRot, rel.offPos, false);
+		}
+		return sign;
+	}
+
+
+
+	if (mirror.at(shotIndex).at(1) == 1) {
+		if (carLoc.Y != 0) {
+			sign[1] = carLoc.Y / abs(carLoc.Y);
+		}
+
+		if (rel_to.at(shotIndex) == 1) {
+			rel.offPos.Y += sign[1] * FIELD_LENGTH;
+		}
+		else {
+			rel.offPos.Y *= sign[1];
+		}
+		rel.unitVec.Y *= sign[1];
+	}
+	else if (mirror.at(shotIndex).at(1) == 2) {
+		if (carRot.Yaw != 0) {
+			sign[1] = carRot.Yaw / abs(carRot.Yaw);
+		}
+
+		rel.offPos.Y *= sign[1];
+		rel.unitVec.Y *= sign[1];
+	}
+
+	// X mirroring:
+	if (mirror.at(shotIndex).at(0) == 1) {
+		if (carLoc.X != 0) {
+			sign[0] = carLoc.X / abs(carLoc.X);
+		}
+
+		if (rel_to.at(shotIndex) == 2) {
+			rel.offPos.Y *= sign[0];
+			rel.unitVec.Y *= sign[0];
+		}
+		else {
+			rel.offPos.X *= sign[0];
+			rel.unitVec.X *= sign[0];
+		}
+	}
+	else if (mirror.at(shotIndex).at(0) == 2) {
+		float yaw = PI_ROT / 2 - abs(carRot.Yaw);
+		if (yaw != 0) {
+			sign[0] = yaw / abs(yaw);
+		}
+
+		if (rel_to.at(shotIndex) == 2) {
+			rel.offPos.Y *= sign[0];
+			rel.unitVec.Y *= sign[0];
+		}
+		else {
+			rel.offPos.X *= sign[0];
+			rel.unitVec.X *= sign[0];
+		}
+	}
+
+	if (rel_to.at(shotIndex) == 2) {
+		rel.offPos = ConvertWorldToLocal(carLoc, carRot, rel.offPos, false);
+	}
+
+
+	return sign;
 }

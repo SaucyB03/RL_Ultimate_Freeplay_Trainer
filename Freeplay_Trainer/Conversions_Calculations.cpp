@@ -4,33 +4,44 @@
 //Calculations
 
 // Determines the position of the ball and direction based of selected settings
-RelativeOffset* Freeplay_Trainer::CalculateOffsets(CarWrapper car, int shotIndex, bool isRender) {
+RelativeOffset* Freeplay_Trainer::CalculateOffsets(CarWrapper car, BallWrapper ball, int shotIndex, bool isRender) {
 	cur_speed = speeds.at(shotIndex);
 
 	Vector carLoc = car.GetLocation();
 	Rotator carRot = car.GetRotation();
 
-	//Convert types for calculations
-	Vector offsetPos = VecToVector(initPosAll, shotIndex);
+	//Determine ball's start position
+	Vector offsetPos;
+	if (rel_to.at(shotIndex) == 3) {
+		offsetPos = ball.GetLocation();
+	}
+	else {
+		offsetPos = VecToVector(initPosAll, shotIndex);
+
+	}
+
+	//Define Variables for relative offset object
 	Vector2F dirRad = VecToVector2(initDir, shotIndex);
 	dirRad.X = DegToRad(dirRad.X);
 	dirRad.Y = DegToRad(dirRad.Y);
 	Vector unitVec = { cos(dirRad.X) * cos(dirRad.Y), sin(dirRad.X) * cos(dirRad.Y), sin(dirRad.Y) };
 	Vector offsetDir = unitVec;
-
 	Quat rotation(1, 0, 0, 0);
-	
+
+	//Holds all info for shot
 	RelativeOffset* rel = new RelativeOffset({ offsetPos, offsetDir, unitVec, rotation });
+
 
 	if (!isRender && usingPosVar.at(shotIndex)) {
 		VaryInitialPos(*rel, shotIndex);
 	}
+	
+	vector<float> sign = MirrorHandler(*rel, car, isRender, shotIndex);
 
-	float* sign = MirrorHandler(*rel, car, shotIndex);
 	
 	// Calculates trajectory to the selected object
 	if (dirMode.at(shotIndex)) {
-		CalcShootAt(*rel, car, sign, shotIndex);
+		CalcShootAt(*rel, car, *signs, shotIndex);
 
 	}
 	else if (rel_to.at(shotIndex) == 2) {
@@ -38,11 +49,8 @@ RelativeOffset* Freeplay_Trainer::CalculateOffsets(CarWrapper car, int shotIndex
 		rel->unitVec = ConvertWorldToLocal(carLoc, carRot, rel->unitVec, arrowLocked) - carLoc;
 		rel->rotation = RotatorToQuat(carRot);
 	}
+
 	rel->offDir = (rel->unitVec * cur_speed * IND_ARR_RATIO) + rel->offPos;
-
-
-	rel->offPos.Z += BALL_RADIUS;
-	rel->offDir.Z += BALL_RADIUS;
 	
 	return rel;
 }
@@ -96,10 +104,11 @@ Vector Freeplay_Trainer::CalcKinematics(Vector start, CarWrapper car, int shotIn
 		carVelN.Z = 0;
 	}
 
+
 	Vector carLeadPos = {leadOff.at(shotIndex),0,0 };
 	carLeadPos = ConvertWorldToLocal(carLoc, carRot, carLeadPos, false);
 
-	Vector futureCarLoc = carVelN * timeTo.at(shotIndex) + carLeadPos;
+	Vector futureCarLoc = carVel * timeTo.at(shotIndex) + carLeadPos;
 
 	//Calculate the rest normally:
 	return CalcKinematics(start, futureCarLoc, shotIndex);
@@ -115,30 +124,25 @@ Vector Freeplay_Trainer::CalcKinematics(Vector start, Vector end, int shotIndex)
 	return { vx, vy, vz};
 }
 
-void Freeplay_Trainer::CalcShootAt(RelativeOffset& rel, CarWrapper car, float* sign, int shotIndex) {
+void Freeplay_Trainer::CalcShootAt(RelativeOffset& rel, CarWrapper car, vector<float> sign, int shotIndex) {
 	Vector dir = {};
-	//Adjusts for the fact that I changed z == 0 to be z == BALL_RADIUS so ball doesnt clip
-	Vector posAdj = rel.offPos + Vector({0, 0, -BALL_RADIUS});
-
+	Vector adjPos = rel.offPos + Vector({ 0.0,0.0,0.0});
 	if (shootAt.at(shotIndex) == 0) {
 		//Shoot at center of car
-		dir = CalcKinematics(posAdj, car.GetLocation(), shotIndex);
+		dir = CalcKinematics(adjPos, car.GetLocation(), shotIndex);
 	}
 	else if(shootAt.at(shotIndex) == 1){
 		//Shoot infront of car
-		dir = CalcKinematics(posAdj, car, shotIndex);
+		dir = CalcKinematics(adjPos, car, shotIndex);
 	}
 	else if (shootAt.at(shotIndex) == 2) {
 		//Shoot at goal
-		dir = CalcKinematics(posAdj, {0,sign[1]*FIELD_LENGTH,642.775/2}, shotIndex);
-
-		LOG("sign: (" + to_string(sign[0]) + ", " + to_string(sign[1]) + ")" + "| y pos: "+to_string(sign[1] * FIELD_LENGTH));
-
+		dir = CalcKinematics(adjPos, {0,sign[1]*FIELD_LENGTH,642.775/2}, shotIndex);
 		
 	}
 	else {
 		//Shoot at Backboard
-		dir = CalcKinematics(posAdj, { 0,sign[1]*FIELD_LENGTH,2044 / 2 }, shotIndex);
+		dir = CalcKinematics(adjPos, { 0,sign[1]*FIELD_LENGTH,2044 / 2 }, shotIndex);
 	}
 
 
@@ -164,20 +168,49 @@ float Freeplay_Trainer::RotYawToRad(Rotator rot) {
 	return yaw;
 }
 
-Vector Freeplay_Trainer::VecToVector(vector<float> vect) {
-	return { vect.at(0),vect.at(1),vect.at(2) };
+Vector Freeplay_Trainer::VecToVector(vector<float> vec) {
+	return { vec.at(0),vec.at(1),vec.at(2) };
 }
 
-Vector Freeplay_Trainer::VecToVector(vector<vector<float>> vect, int index) {
-	vector<float> atInd = vect.at(index);
+Vector Freeplay_Trainer::VecToVector(vector<vector<float>> vec, int index) {
+	vector<float> atInd = vec.at(index);
 	return VecToVector(atInd);
 }
 
-Vector2F Freeplay_Trainer::VecToVector2(vector<float> vect) {
-	return { vect.at(0),vect.at(1) };
+Vector2F Freeplay_Trainer::VecToVector2(vector<float> vec) {
+	return { vec.at(0),vec.at(1) };
 }
 
-Vector2F Freeplay_Trainer::VecToVector2(vector<vector<float>> vect, int index) {
-	vector<float> atInd = vect.at(index);
+Vector2F Freeplay_Trainer::VecToVector2(vector<vector<float>> vec, int index) {
+	vector<float> atInd = vec.at(index);
 	return VecToVector2(atInd);
+}
+
+
+vector<LinearColor> Freeplay_Trainer::VecFloatToVecLinearColor(vector<vector<float>> vec) {
+
+	vector<LinearColor> colLC;
+	for (int i = 0; i < vec.size(); ++i) {
+		LinearColor color({ vec.at(i).at(0), vec.at(i).at(1), vec.at(i).at(2), vec.at(i).at(3) });
+		colLC.push_back(color);
+	}
+	return colLC;
+}
+
+vector<vector<float>> Freeplay_Trainer::VecLinearColorToVecFloat(vector<LinearColor> vec) {
+	vector<vector<float>> col_f;
+	for (int i = 0; i < vec.size(); ++i) {
+		vector<float> color({ vec.at(i).R, vec.at(i).G, vec.at(i).B, vec.at(i).A });
+		col_f.push_back(color);
+	}
+	return col_f;
+}
+
+ImVec4 Freeplay_Trainer::VecLinearColorToVec4(vector<LinearColor> color, int index) {
+	return ImVec4{ color.at(index).R / 255.0f, color.at(index).G / 255.0f, color.at(index).B / 255.0f, color.at(index).A / 255.0f };
+}
+
+void Freeplay_Trainer::AssignLinearColorFromVec4(ImVec4 color, int index) {
+	LinearColor col({ color.x * 255.0f,color.y * 255.0f ,color.z * 255.0f ,color.w * 255.0f });
+	colors.at(index) = col;
 }

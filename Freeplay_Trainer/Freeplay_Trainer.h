@@ -63,24 +63,29 @@ private:
 	//ShotHandling.cpp
 	void InputHandler(std::vector<std::string> params);
 	void ShotHandler(int shotIndex);
-	void CheckBallLock(BallWrapper ball);
+	void CheckBallLock(BallWrapper ball, CarWrapper car);
 	void VaryInitialDir(RelativeOffset& rel, int shotIndex);
 	void VaryInitialPos(RelativeOffset& rel, int shotIndex);
-	float* MirrorHandler(RelativeOffset& rel, CarWrapper car, int shotIndex);
+	vector<float> MirrorHandler(RelativeOffset& rel, CarWrapper car, bool isRender, int shotIndex);
 
 	//Conversions_Calculations.cpp
-	RelativeOffset* CalculateOffsets(CarWrapper car, int shotIndex, bool isRender);
+	RelativeOffset* CalculateOffsets(CarWrapper car, BallWrapper ball, int shotIndex, bool isRender);
 	Vector ConvertWorldToLocal(Vector A_pos, Rotator A_rot, Vector B_pos, bool locked);
 	Vector CalcKinematics(Vector start, Vector end, int shotIndex);
 	Vector CalcKinematics(Vector start, CarWrapper car, int shotIndex);
-	void CalcShootAt(RelativeOffset& rel, CarWrapper car, float* sign, int shotIndex);
+	void CalcShootAt(RelativeOffset& rel, CarWrapper car, vector<float> sign, int shotIndex);
 	float DegToRad(float degrees);
 	float RotYawToRad(Rotator rot);
-	Vector VecToVector(vector<float> vector);
-	Vector VecToVector(vector<vector<float>> vector, int index);
+	Vector VecToVector(vector<float> vec);
+	Vector VecToVector(vector<vector<float>> vec, int index);
 	Vector2F VecToVector2(vector<float> vector);
-	Vector2F VecToVector2(vector<vector<float>> vector, int index);
+	Vector2F VecToVector2(vector<vector<float>> vec, int index);
+	vector<LinearColor> VecFloatToVecLinearColor(vector<vector<float>> vec);
+	vector<vector<float>> VecLinearColorToVecFloat(vector<LinearColor> vec);
+	ImVec4 VecLinearColorToVec4(vector<LinearColor> color, int index);
+	void AssignLinearColorFromVec4(ImVec4 color, int index);
 	
+	// Randomness handling
 	void initRand();
 	float getRandFloat(float min, float max);
 	std::mt19937 gen;
@@ -90,6 +95,7 @@ private:
 	vector<vector<float>> initPosAll;
 	vector<int> rel_to;
 	vector<float> speeds;
+	vector<bool> willFreeze;
 	vector<bool> addVel;
 	vector<bool> dirMode;
 	vector<int> shootAt;
@@ -103,8 +109,10 @@ private:
 	vector<int> posVarShape;
 	vector<vector<float>> cuboid;
 	vector<float> sphere;
+	vector<LinearColor> colors;
 
 	//Flags for indicators
+	bool togAll = false;
 	bool posVarInd = false;
 	bool dirVarInd = false;
 	bool ball_indicator = false;
@@ -115,8 +123,10 @@ private:
 
 	//Temp variables during run (avoids overwriting saved variables)
 	Vector targetPos = {0,0,0};
+	Vector curPos = { 0,0,0 };
 	int cur_shot = 0;
 	float cur_speed = 0.0f;
+	vector<float>* signs = new vector<float>(2);
 
 
 	//When true locks ball in place

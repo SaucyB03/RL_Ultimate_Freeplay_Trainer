@@ -21,6 +21,9 @@ void Freeplay_Trainer::onLoad()
 
 	gameWrapper->HookEvent("Function Engine.GameViewportClient.Tick", bind(&Freeplay_Trainer::onTick, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.Ball_TA.OnCarTouch", [&](std::string eventName) {hold_ball = false;});
+
+	signs->at(0) = 1.0;
+	signs->at(1) = 1.0;
 	
 	initRand();
 }
@@ -35,8 +38,10 @@ void Freeplay_Trainer::onTick(string eventName) {
 	if (!server) { return; }
 	BallWrapper ball = server.GetBall();
 	if (!ball) { return; }
+	CarWrapper car = gameWrapper->GetLocalCar();
+	if (!car) { return; }
 
-	CheckBallLock(ball);
+	CheckBallLock(ball, car);
 }
 
 //Opens json save file, then converts and stores each associated vector
@@ -54,6 +59,7 @@ void Freeplay_Trainer::loadPresets() {
 	initPosAll = j["position"].get<vector<vector<float>>>();
 	rel_to = j["relation"].get<vector<int>>();
 	speeds = j["speeds"].get<vector<float>>();
+	willFreeze = j["freeze"].get<vector<bool>>();
 	addVel = j["addVelocity"].get<vector<bool>>();
 	initDir = j["direction"].get<vector<vector<float>>>();
 	dirMode = j["directionMode"].get<vector<bool>>();
@@ -69,6 +75,7 @@ void Freeplay_Trainer::loadPresets() {
 	sphere = j["sphere"].get<vector<float>>();
 	groupIndices = j["groupIndices"].get<vector<vector<int>>>();
 	groupNames = j["groupNames"].get<vector<string>>();
+	colors = VecFloatToVecLinearColor(j["colors"].get<vector<vector<float>>>());
 }
 
 //Opens json save file then dumps contents of vectors into it
@@ -79,6 +86,7 @@ void Freeplay_Trainer::savePresets() {
 	j["position"] = initPosAll;
 	j["relation"] = rel_to;
 	j["speeds"] = speeds;
+	j["freeze"] = willFreeze;
 	j["addVelocity"] = addVel;
 	j["directionMode"] = dirMode;
 	j["shootAt"] = shootAt;
@@ -95,6 +103,8 @@ void Freeplay_Trainer::savePresets() {
 
 	j["groupIndices"] = groupIndices;
 	j["groupNames"] = groupNames;
+
+	j["colors"] = VecLinearColorToVecFloat(colors);
 
 	ofstream file(gameWrapper->GetDataFolder() / "Freeplay_Trainer" / "presetscfg.json");
 	file << j.dump(4);

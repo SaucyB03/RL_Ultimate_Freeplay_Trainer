@@ -193,15 +193,19 @@ void Freeplay_Trainer::RenderSettings() {
             ImGui::BeginChild("shoteditor", ImVec2(0, 0), true);
             if (ImGui::TreeNodeEx("Initial Position", ImGuiTreeNodeFlags_Framed)) {
 
-                vector<float> curPos = initPosAll.at(cur_shot);
-                float vec3Pos[3] = { curPos.at(0), curPos.at(1), curPos.at(2) };
-                if (ImGui::DragFloat3("Initial Position", vec3Pos, 1)) {
-                    initPosAll.at(cur_shot) = { vec3Pos[0],vec3Pos[1],vec3Pos[2] };
-                    edit = true;
+                if (rel_to.at(cur_shot) != 3) {
+                    vector<float> curPos = initPosAll.at(cur_shot);
+                    float vec3Pos[3] = { curPos.at(0), curPos.at(1), curPos.at(2) };
+                    if (ImGui::DragFloat3("Initial Position", vec3Pos, 1)) {
+                        initPosAll.at(cur_shot) = { vec3Pos[0],vec3Pos[1],vec3Pos[2] };
+                        edit = true;
+                    }
                 }
 
+
+
                 int current_relative = rel_to.at(cur_shot);
-                if (ImGui::Combo("Position Relative to What?", &current_relative, "Center\0Goal\0Car\0\0")) {
+                if (ImGui::Combo("Position Relative to What?", &current_relative, "Center\0Goal\0Car\0Ball\0\0")) {
                     rel_to.at(cur_shot) = current_relative;
                     edit = true;
                 }
@@ -291,7 +295,7 @@ void Freeplay_Trainer::RenderSettings() {
                 else {
 
                     ImGui::Text("Speed");
-                    if (rel_to.at(cur_shot) == 2) {
+                    if (rel_to.at(cur_shot) == 2 || speed == 0.0) {
                         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
                     }
 
@@ -300,13 +304,22 @@ void Freeplay_Trainer::RenderSettings() {
                         cur_speed = speed;
                         edit = true;
                     }
-                    if (rel_to.at(cur_shot) == 2) {
+                    if (rel_to.at(cur_shot) == 2 && speed != 0.0) {
 
                         bool aVel = addVel.at(cur_shot);
                         ImGui::SameLine();
                         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
                         if (ImGui::Checkbox("Add Velocity to Cars", &aVel)) {
                             addVel.at(cur_shot) = aVel;
+                            edit = true;
+                        }
+                    }
+                    else if (speed == 0.0) {
+                        bool canFreeze = willFreeze.at(cur_shot);
+                        ImGui::SameLine();
+                        ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
+                        if (ImGui::Checkbox("Does Ball Remain Frozen?", &canFreeze)) {
+                            willFreeze.at(cur_shot) = canFreeze;
                             edit = true;
                         }
                     }
@@ -331,7 +344,7 @@ void Freeplay_Trainer::RenderSettings() {
 
                 int miry = mirror.at(cur_shot).at(1);
                 ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
-                if (ImGui::Combo("##MirGoalCombo", &miry, "Never\0Same Half as Goal\0Goal Car is Facing\0Random Goal\0\0")) {
+                if (ImGui::Combo("##MirGoalCombo", &miry, "Never\0Same Half as Goal\0Goal Car is Facing\0Random Half\0\0")) {
                     mirror.at(cur_shot).at(1) = miry;
                     edit = true;
                 }
@@ -381,16 +394,10 @@ void Freeplay_Trainer::RenderSettings() {
                     if (cur_shape == 0) {
                         vector<float> curCube = cuboid.at(cur_shot);
                         float vecCube[3] = { curCube.at(0), curCube.at(1), curCube.at(2) };
-                        if (rel_to.at(cur_shot) == 2) {
-                            float vecCube[3] = { curCube.at(0), curCube.at(2), curCube.at(1) };
-                        }
 
                         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
                         if (ImGui::DragFloat3("Cuboid Size", vecCube, 1)) {
                             cuboid.at(cur_shot) = { vecCube[0],vecCube[1],vecCube[2] };
-                            if (rel_to.at(cur_shot) == 2) {
-                                cuboid.at(cur_shot) = { vecCube[0],vecCube[2],vecCube[1] };
-                            }
                             edit = true;
                         }
                     }
@@ -438,8 +445,8 @@ void Freeplay_Trainer::RenderSettings() {
             }
 
             ImGui::Separator();
-            static bool ball_ind = false;
-            static bool line_ind = false;
+            static bool ball_ind = ball_indicator;
+            static bool line_ind = line_indicator;
             if (ImGui::Checkbox("Show Ball Indicator", &ball_ind)) {
                 ball_indicator = ball_ind;
             }
@@ -463,6 +470,40 @@ void Freeplay_Trainer::RenderSettings() {
             }
             ImGui::EndChild();
             
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("General Settings")) {
+            ImGui::Text("General Indicator Settings");
+            if (ImGui::Checkbox("Toggle All Indicators", &togAll)) {
+                posVarInd = togAll;
+                dirVarInd = togAll;
+                ball_indicator = togAll;
+                line_indicator = togAll;
+            }
+            ImGui::Separator();
+            ImGui::Text("Change Indicator Colors");
+            ImVec4 bCol = VecLinearColorToVec4(colors, 0);
+            ImVec4 aCol = VecLinearColorToVec4(colors, 1);
+            ImVec4 pCol = VecLinearColorToVec4(colors, 2);
+            ImVec4 dCol = VecLinearColorToVec4(colors, 3);
+
+            if (ImGui::ColorEdit4("Ball Indicator Color", (float*)&bCol, ImGuiColorEditFlags_NoInputs)) {
+                AssignLinearColorFromVec4(bCol, 0);
+            }
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Arrow Indicator Color", (float*)&aCol, ImGuiColorEditFlags_NoInputs)) {
+                AssignLinearColorFromVec4(aCol, 1);
+            }
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Position Indicator Color", (float*)&pCol, ImGuiColorEditFlags_NoInputs)) {
+                AssignLinearColorFromVec4(pCol, 2);
+            }
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Directon Indicator Color", (float*)&dCol, ImGuiColorEditFlags_NoInputs)) {
+                AssignLinearColorFromVec4(dCol, 3);
+            }
+
+
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();

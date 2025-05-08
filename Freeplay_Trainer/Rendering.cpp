@@ -5,13 +5,19 @@ void Freeplay_Trainer::Render(CanvasWrapper canvas) {
 	if (!gameWrapper->IsInFreeplay()) { return; }
 	if (!*enable) { return; }
 
+
+	// Get necessary game objects
+	ServerWrapper server = gameWrapper->GetCurrentGameState();
+	if (!server) { return; }
 	CameraWrapper camera = gameWrapper->GetCamera();
 	if (!camera) { return; }
 	CarWrapper car = gameWrapper->GetLocalCar();
 	if (!car) { return; }
+	BallWrapper ball = server.GetBall();
+	if (!ball) { return; }
 
 	RT::Frustum frustum(canvas, RotatorToQuat(camera.GetRotation()), camera.GetLocation());
-	RelativeOffset* rel = CalculateOffsets(car, cur_shot, true);
+	RelativeOffset* rel = CalculateOffsets(car, ball, cur_shot, true);
 
 
 	//Render applicable indicators:
@@ -24,14 +30,14 @@ void Freeplay_Trainer::RenderShotIndicators(CanvasWrapper canvas, CameraWrapper 
 		//Display Ball
 		RT::Sphere b(rel.offPos, 15);
 		RT::Sphere ball(rel.offPos, rel.rotation, BALL_RADIUS);
-		ball.Draw(canvas, frustum, camera.GetLocation(), LinearColor(255.0, 255.0, 0.0, 255.0), 16);
+		ball.Draw(canvas, frustum, camera.GetLocation(), colors.at(0), 16);
 
 		if (line_indicator) {
 			//Display Arrow
 			RT::Line line(rel.offPos, rel.offDir);
-			line.DrawWithinFrustum(canvas, frustum, LinearColor(255.0, 255.0, 0.0, 255.0));
+			line.DrawWithinFrustum(canvas, frustum, colors.at(1));
 			RT::Cone point(rel.offDir, rel.unitVec, 30, 50);
-			point.Draw(canvas, frustum, LinearColor(255.0, 255.0, 0.0, 255.0));
+			point.Draw(canvas, frustum, colors.at(1));
 		}
 	}
 }
@@ -50,7 +56,7 @@ void Freeplay_Trainer::RenderVarianceIndicators(CanvasWrapper canvas, CameraWrap
 
 		//Create and Draw Cone
 		RT::Cone varCone(startPos, -1*rel.unitVec, h, l);
-		varCone.Draw(canvas, frustum, LinearColor(255.0, 0.0, 0.0, 255.0));
+		varCone.Draw(canvas, frustum, colors.at(2));
 	}
 
 	//Displays the positional variance
@@ -58,18 +64,19 @@ void Freeplay_Trainer::RenderVarianceIndicators(CanvasWrapper canvas, CameraWrap
 		if (posVarShape.at(cur_shot) == 0) {
 			//Create and draw the cuboid
 			if (rel_to.at(cur_shot) == 2) {
+
 				RT::Cube varCube(rel.offPos, rel.rotation, VecToVector(cuboid, cur_shot));
-				varCube.Draw(canvas, frustum, LinearColor(255.0, 0.0, 0.0, 255.0));
+				varCube.Draw(canvas, frustum, colors.at(3));
 			}else{
-				RT::Cube varCube(rel.offPos, Quat(1, 1, 0, 0), VecToVector(cuboid, cur_shot));
-				varCube.Draw(canvas, frustum, LinearColor(255.0, 0.0, 0.0, 255.0));
+				RT::Cube varCube(rel.offPos, Quat(1, 0, 0, 0), VecToVector(cuboid, cur_shot));
+				varCube.Draw(canvas, frustum, colors.at(3));
 			}
 
 		}
 		else {
 			//Create and draw the sphere
 			RT::Sphere varSphere(rel.offPos, sphere.at(cur_shot));
-			varSphere.Draw(canvas, frustum, camera.GetLocation(), LinearColor(255.0, 0.0, 0.0, 255.0), 16);
+			varSphere.Draw(canvas, frustum, camera.GetLocation(), colors.at(3), 16);
 		}
 	}
 }

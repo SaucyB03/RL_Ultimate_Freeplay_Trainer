@@ -6,3 +6,8 @@ A collection of rendering tools and objects for BakkesMod CanvasWrapper drawing 
 **This is a personal repo and as such it is prone to occasional drastic changes.**
 
 **Sometimes code may not work because it relies on beta features of BakkesMod that are not public. If that is the case, try pulling from previous commits, or wait until BakkesMod receives an update.**
+
+---
+*NOTE: From SaucyB:*
+- I made some changes to these files; they are not the originals. What I implemented was to allow for color changing and out-of-bounds indication.
+- If you are looking for the original, **GO HERE!**: https://github.com/CinderBlocc/RenderingTools

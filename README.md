@@ -1,5 +1,5 @@
 ## Ultimate Freeplay Trainer
-#About
+# About
 - This is a Rocket League plugin that you can install on bakkesmod.com.
 - Its goal is to provide unlimited customization to your freeplay keybinds.
 - Originally, you are only able to use the pre-defined presets either Rocket League or bakkesmod created.

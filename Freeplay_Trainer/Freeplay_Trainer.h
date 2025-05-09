@@ -52,6 +52,7 @@ private:
 	//Freeplay_Trainer.cpp
 	void loadPresets();
 	void savePresets();
+	void resetPreset(int shotIndex);
 
 	//Freplay_Trainer_Settings.cpp
 	bool ErrorCheck();

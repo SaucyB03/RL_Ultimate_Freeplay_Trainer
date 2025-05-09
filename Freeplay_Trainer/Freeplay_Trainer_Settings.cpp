@@ -210,17 +210,17 @@ void Freeplay_Trainer::RenderSettings() {
                     edit = true;
                 }
 
-                if (current_relative == 2) {
-                    static bool ballLock = false;
+                /*if (current_relative == 2) {
+                    bool ballLock = ballLocked;
                     if (ImGui::Checkbox("Lock All Ball Axis To Car", &ballLock)) {
                         ballLocked = ballLock;
                     }
                     ImGui::SameLine();
-                    static bool arrowLock = false;
+                    bool arrowLock = arrowLocked;
                     if (ImGui::Checkbox("Lock Arrow Axis To Car", &arrowLock)) {
                         arrowLocked = arrowLock;
                     }
-                }
+                }*/
                 ImGui::TreePop();
             }
 
@@ -468,7 +468,28 @@ void Freeplay_Trainer::RenderSettings() {
                 LOG("Preset Successfully Saved!");
 
             }
+            ImGui::SameLine();
+
+            if (ImGui::Button("Revert Shot to Default")) {
+                ImGui::OpenPopup("Revert to Default?");
+            }
+
+            if (ImGui::BeginPopupModal("Revert to Default?", NULL)) {
+                string txt = "Are you sure your want to revert " + names.at(cur_shot) + "?\nThis cannot be undone!";
+                ImGui::Text(txt.c_str());
+
+                if (ImGui::Button("Yes", ImVec2(120, 0))) { 
+                    resetPreset(cur_shot);
+                    ImGui::CloseCurrentPopup(); 
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("No", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
+
             ImGui::EndChild();
+
             
             ImGui::EndTabItem();
         }
@@ -503,6 +524,24 @@ void Freeplay_Trainer::RenderSettings() {
                 AssignLinearColorFromVec4(dCol, 3);
             }
 
+
+            if (ImGui::Button("Revert All to Default")) {
+                ImGui::OpenPopup("Revert All to Default?");
+            }
+
+            if (ImGui::BeginPopupModal("Revert All to Default?", NULL)) {
+                string txt = "Are you sure your want to revert all settings to default?\nThis cannot be undone!";
+                ImGui::Text(txt.c_str());
+
+                if (ImGui::Button("Yes", ImVec2(120, 0))) { 
+                    resetPreset(-1);
+                    ImGui::CloseCurrentPopup(); 
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("No", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
 
             ImGui::EndTabItem();
         }

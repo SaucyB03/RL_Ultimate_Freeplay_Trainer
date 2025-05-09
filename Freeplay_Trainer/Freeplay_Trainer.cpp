@@ -110,6 +110,67 @@ void Freeplay_Trainer::savePresets() {
 	file << j.dump(4);
 }
 
+void Freeplay_Trainer::resetPreset(int shotIndex) {
+	ifstream file(gameWrapper->GetDataFolder() / "Freeplay_Trainer" / "defaultcfg.json");
+	if (!file.is_open()) {
+		LOG("Failed to load defaultcfg.json");
+		return;
+	}
+	nlohmann::json j;
+	file >> j;
+
+	if (shotIndex == -1) {
+		//Resets all presets
+		names = j["names"].get<vector<string>>();
+		initPosAll = j["position"].get<vector<vector<float>>>();
+		rel_to = j["relation"].get<vector<int>>();
+		speeds = j["speeds"].get<vector<float>>();
+		willFreeze = j["freeze"].get<vector<bool>>();
+		addVel = j["addVelocity"].get<vector<bool>>();
+		initDir = j["direction"].get<vector<vector<float>>>();
+		dirMode = j["directionMode"].get<vector<bool>>();
+		shootAt = j["shootAt"].get<vector<int>>();
+		timeTo = j["time"].get<vector<float>>();
+		leadOff = j["leadOff"].get<vector<float>>();
+		mirror = j["mirror"].get< vector<vector<int>>>();
+		usingDirVar = j["usingDirVar"].get<vector<bool>>();
+		variance = j["variance"].get<vector<float>>();
+		usingPosVar = j["usingPosVar"].get<vector<bool>>();
+		posVarShape = j["posVarShape"].get<vector<int>>();
+		cuboid = j["cuboid"].get<vector<vector<float>>>();
+		sphere = j["sphere"].get<vector<float>>();
+		groupIndices = j["groupIndices"].get<vector<vector<int>>>();
+		groupNames = j["groupNames"].get<vector<string>>();
+		colors = VecFloatToVecLinearColor(j["colors"].get<vector<vector<float>>>());
+	}
+	else {
+		//Only resets the cur_shot preset
+		names.at(shotIndex) = j["names"].get<vector<string>>().at(shotIndex);
+		initPosAll.at(shotIndex) = j["position"].get<vector<vector<float>>>().at(shotIndex);
+		rel_to.at(shotIndex) = j["relation"].get<vector<int>>().at(shotIndex);
+		speeds.at(shotIndex) = j["speeds"].get<vector<float>>().at(shotIndex);
+		willFreeze.at(shotIndex) = j["freeze"].get<vector<bool>>().at(shotIndex);
+		addVel.at(shotIndex) = j["addVelocity"].get<vector<bool>>().at(shotIndex);
+		initDir.at(shotIndex) = j["direction"].get<vector<vector<float>>>().at(shotIndex);
+		dirMode.at(shotIndex) = j["directionMode"].get<vector<bool>>().at(shotIndex);
+		shootAt.at(shotIndex) = j["shootAt"].get<vector<int>>().at(shotIndex);
+		timeTo.at(shotIndex) = j["time"].get<vector<float>>().at(shotIndex);
+		leadOff.at(shotIndex) = j["leadOff"].get<vector<float>>().at(shotIndex);
+		mirror.at(shotIndex) = j["mirror"].get< vector<vector<int>>>().at(shotIndex);
+		usingDirVar.at(shotIndex) = j["usingDirVar"].get<vector<bool>>().at(shotIndex);
+		variance.at(shotIndex) = j["variance"].get<vector<float>>().at(shotIndex);
+		usingPosVar.at(shotIndex) = j["usingPosVar"].get<vector<bool>>().at(shotIndex);
+		posVarShape.at(shotIndex) = j["posVarShape"].get<vector<int>>().at(shotIndex);
+		cuboid.at(shotIndex) = j["cuboid"].get<vector<vector<float>>>().at(shotIndex);
+		sphere.at(shotIndex) = j["sphere"].get<vector<float>>().at(shotIndex);
+		groupIndices.at(shotIndex) = j["groupIndices"].get<vector<vector<int>>>().at(shotIndex);
+		groupNames.at(shotIndex) = j["groupNames"].get<vector<string>>().at(shotIndex);
+		colors.at(shotIndex) = VecFloatToVecLinearColor(j["colors"].get<vector<vector<float>>>()).at(shotIndex);
+	}
+
+	savePresets();
+}
+
 
 void Freeplay_Trainer::initRand() {
 	std::random_device rd;

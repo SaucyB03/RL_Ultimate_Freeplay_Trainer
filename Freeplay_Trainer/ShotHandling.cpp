@@ -105,11 +105,6 @@ void Freeplay_Trainer::VaryInitialPos(RelativeOffset& rel, int shotIndex) {
 			float x[2] = { -cuboid.at(shotIndex).at(0) / 2,cuboid.at(shotIndex).at(0) / 2 };
 			float y[2] = { -cuboid.at(shotIndex).at(1) / 2,cuboid.at(shotIndex).at(1) / 2 };
 			float z[2] = { -cuboid.at(shotIndex).at(2) / 2,cuboid.at(shotIndex).at(2) / 2 };
-
-		/*	if (rel_to.at(shotIndex) != 2) {
-				float z[2] = { -cuboid.at(shotIndex).at(1) / 2,cuboid.at(shotIndex).at(1) / 2 };
-				float y[2] = { -cuboid.at(shotIndex).at(2) / 2,cuboid.at(shotIndex).at(2) / 2 };
-			}*/
 			
 
 

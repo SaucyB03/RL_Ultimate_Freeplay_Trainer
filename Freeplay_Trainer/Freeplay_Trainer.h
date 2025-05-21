@@ -5,7 +5,7 @@
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
 #include "RenderingTools/Objects/Frustum.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 #include "constants.h"
 

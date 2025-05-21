@@ -1,0 +1,15 @@
+UFT Custom Binds
+Sets the configuration to your currently selected customized preset of shots
+
+begin_config
+enable_UTF_plugin 1
+
+bind XboxTypeS_DPad_Left "ShotBind left1"
+bind XboxTypeS_DPad_Right "ShotBind right2"
+bind XboxTypeS_DPad_Up "ShotBind up3"
+bind XboxTypeS_DPad_Down "ShotBind down4"
+
+bind One "ShotBind left1"
+bind Two "ShotBind right2"
+bind Three "ShotBind up3"
+bind Four "ShotBind down4"

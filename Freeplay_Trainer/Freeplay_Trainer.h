@@ -81,6 +81,7 @@ private:
 	Vector VecToVector(vector<vector<float>> vec, int index);
 	Vector2F VecToVector2(vector<float> vector);
 	Vector2F VecToVector2(vector<vector<float>> vec, int index);
+	Quat unitVectorToQuat(Vector vec);
 	vector<LinearColor> VecFloatToVecLinearColor(vector<vector<float>> vec);
 	vector<vector<float>> VecLinearColorToVecFloat(vector<LinearColor> vec);
 	ImVec4 VecLinearColorToVec4(vector<LinearColor> color, int index);
@@ -103,6 +104,7 @@ private:
 	vector<float> timeTo;
 	vector<float> leadOff;
 	vector<vector<float>> initDir;
+	vector<vector<float>> spin;
 	vector<vector<int>> mirror;
 	vector<bool> usingDirVar;
 	vector<float> variance;
@@ -118,6 +120,7 @@ private:
 	bool dirVarInd = false;
 	bool ball_indicator = false;
 	bool line_indicator = false;
+	bool spin_indicator = false;
 	bool ballLocked = false;
 	bool arrowLocked = false;
 	bool freeze = false;

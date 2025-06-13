@@ -186,6 +186,17 @@ Vector2F Freeplay_Trainer::VecToVector2(vector<vector<float>> vec, int index) {
 	return VecToVector2(atInd);
 }
 
+Quat Freeplay_Trainer::unitVectorToQuat(Vector vec) {
+	float roll = vec.Y;
+	float pitch = vec.X;
+	float yaw = vec.Z;
+
+	float w = cos(roll / 2) * cos(pitch / 2) * cos(yaw / 2) + sin(roll / 2) * sin(pitch / 2) * sin(yaw / 2);
+	float x = sin(roll / 2) * cos(pitch / 2) * cos(yaw / 2) - cos(roll / 2) * sin(pitch / 2) * sin(yaw / 2);
+	float y = cos(roll / 2) * sin(pitch / 2) * cos(yaw / 2) + sin(roll / 2) * cos(pitch / 2) * sin(yaw / 2);
+	float z = cos(roll / 2) * cos(pitch / 2) * sin(yaw / 2) - sin(roll / 2) * sin(pitch / 2) * cos(yaw / 2);
+	return Quat(w, x, y, z);
+}
 
 vector<LinearColor> Freeplay_Trainer::VecFloatToVecLinearColor(vector<vector<float>> vec) {
 

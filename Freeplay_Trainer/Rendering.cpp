@@ -39,7 +39,16 @@ void Freeplay_Trainer::RenderShotIndicators(CanvasWrapper canvas, CameraWrapper 
 			RT::Cone point(rel.offDir, rel.unitVec, 30, 50);
 			point.Draw(canvas, frustum, colors.at(1));
 		}
+		if (spin_indicator) {
+			Vector unitSpin = VecToVector(spin.at(0)).getNormalized();
+
+			float mag = VecToVector(spin.at(0)).magnitude();
+			Quat rotation = unitVectorToQuat(unitSpin);
+			RT::Circle circle(rel.offPos, { 1.0,0.0,0.0,1.0 }, BALL_RADIUS*0.75, 0.9 * mag / MAX_BAL_ANG_VEL);
+			circle.Draw(canvas, { -unitSpin.Y,unitSpin.X,-unitSpin.Z }, frustum, colors.at(4));
+		}
 	}
+
 }
 
 void Freeplay_Trainer::RenderVarianceIndicators(CanvasWrapper canvas, CameraWrapper camera, RT::Frustum frustum, RelativeOffset rel) {

@@ -38,17 +38,22 @@ void Freeplay_Trainer::ShotHandler(int shotIndex) {
 
 
 	if (dirMode.at(shotIndex) || (speeds.at(shotIndex) != 0 && !willFreeze.at(shotIndex))) {
-		//Calculates offsets: includes calculating variance
+		//Calculates all offsets: includes calculating variance
 		RelativeOffset *rel = CalculateOffsets(car, ball, shotIndex, false);
 		VaryInitialDir(*rel, shotIndex);
 
 		ball.SetLocation(rel->offPos);
 		Vector ballVel = rel->unitVec * cur_speed * KPH_TO_BALL_VEL;
 		if (addVel.at(shotIndex) && !dirMode.at(shotIndex)) {
-			ballVel += car.GetVelocity();
+			if (rel_to.at(shotIndex) == 2) {
+				ballVel += car.GetVelocity();
+			}
+			else {
+				ballVel += ball.GetVelocity();
+			}
 		}
 		ball.SetVelocity(ballVel);
-		ball.SetAngularVelocity({ 0,0,0 }, false);
+		ball.SetAngularVelocity(VecToVector(spin.at(0)), false);
 		
 	}
 	else {
@@ -60,6 +65,7 @@ void Freeplay_Trainer::ShotHandler(int shotIndex) {
 		//Lock ball in location
 		hold_ball = true;
 		cur_speed = 0.0;
+		ball.SetAngularVelocity(VecToVector(spin.at(0)), false);
 	}
 
 }
@@ -69,8 +75,7 @@ void Freeplay_Trainer::CheckBallLock(BallWrapper ball, CarWrapper car) {
 	if (willFreeze.at(cur_shot_index) && hold_ball) {
 		ball.SetLocation(curPos);
 		ball.SetVelocity({ 0,0,0 });
-		ball.SetVelocity({ 0,0,0 });
-		ball.SetAngularVelocity({ 0,0,0 }, false);
+		ball.SetAngularVelocity(VecToVector(spin.at(0)), false);
 	}
 }
 

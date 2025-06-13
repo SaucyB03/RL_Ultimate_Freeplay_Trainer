@@ -19,10 +19,10 @@ namespace RT
 
 		// CONSTRUCTORS
 		explicit Circle();
-		explicit Circle(Vector loc, Quat rot, float rad);
+		explicit Circle(Vector loc, Quat rot, float rad, float percent);
 
 		// FUNCTIONS
-		void Draw(CanvasWrapper canvas, Frustum &frustum) const;
+		void Draw(CanvasWrapper canvas, Vector axis, Frustum &frustum, LinearColor color) const;
 		void DrawSegmented(CanvasWrapper canvas, Frustum &frustum, int segments, float percentPerSeg=0.5f) const;
 	};
 }

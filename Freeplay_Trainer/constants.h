@@ -14,3 +14,4 @@ constexpr int CM_TO_M = 100;
 constexpr int FIELD_LENGTH = 5120;
 constexpr int FIELD_WIDTH = 4096;
 constexpr int FIELD_HEIGHT = 2044;
+constexpr float MAX_BAL_ANG_VEL = 5.5;

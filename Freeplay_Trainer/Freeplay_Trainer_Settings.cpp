@@ -295,7 +295,7 @@ void Freeplay_Trainer::RenderSettings() {
                 else {
 
                     ImGui::Text("Speed");
-                    if (rel_to.at(cur_shot) == 2 || speed == 0.0) {
+                    if (rel_to.at(cur_shot) == 2 || rel_to.at(cur_shot) == 3 || speed == 0.0) {
                         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
                     }
 
@@ -310,6 +310,14 @@ void Freeplay_Trainer::RenderSettings() {
                         ImGui::SameLine();
                         ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
                         if (ImGui::Checkbox("Add Velocity to Cars", &aVel)) {
+                            addVel.at(cur_shot) = aVel;
+                            edit = true;
+                        }
+                    }else if (rel_to.at(cur_shot) == 3 && speed != 0.0) {
+                        bool aVel = addVel.at(cur_shot);
+                        ImGui::SameLine();
+                        ImGui::SetNextItemWidth(ImGui::GetWindowContentRegionWidth() * 0.3f);
+                        if (ImGui::Checkbox("Add Velocity to Ball", &aVel)) {
                             addVel.at(cur_shot) = aVel;
                             edit = true;
                         }
@@ -335,6 +343,16 @@ void Freeplay_Trainer::RenderSettings() {
                 ImGui::EndGroup();
                 ImGui::TreePop();
 
+            }
+            if (ImGui::TreeNodeEx("Spin", ImGuiTreeNodeFlags_Framed)) {
+                vector<float> curSpin = spin.at(0);
+                float vecSpin[3] = { curSpin.at(0), curSpin.at(1), curSpin.at(2) };
+                ImGui::Text("Spin Direction");
+                if (ImGui::DragFloat3("(radian per sec)", vecSpin, 0.05f, -5.5f, 5.5f)) {
+                    spin.at(0) = { vecSpin[0], vecSpin[1], vecSpin[2] };
+                    edit = true;
+                }
+                ImGui::TreePop();
             }
 
             if (ImGui::TreeNodeEx("Mirroring", ImGuiTreeNodeFlags_Framed)) {
@@ -447,6 +465,7 @@ void Freeplay_Trainer::RenderSettings() {
             ImGui::Separator();
             static bool ball_ind = ball_indicator;
             static bool line_ind = line_indicator;
+            static bool spin_ind = spin_indicator;
             if (ImGui::Checkbox("Show Ball Indicator", &ball_ind)) {
                 ball_indicator = ball_ind;
             }
@@ -455,7 +474,13 @@ void Freeplay_Trainer::RenderSettings() {
                 if (ImGui::Checkbox("Show Line Indicator", &line_ind)) {
                     line_indicator = line_ind;
                 }
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Show Spin Indicator", &spin_ind)) {
+                    ImGui::SameLine();
+                    spin_indicator = spin_ind;
+                }
             }
+
 
             if (edit) {
                 ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "You have unsaved changes!");
@@ -507,6 +532,7 @@ void Freeplay_Trainer::RenderSettings() {
             ImVec4 aCol = VecLinearColorToVec4(colors, 1);
             ImVec4 pCol = VecLinearColorToVec4(colors, 2);
             ImVec4 dCol = VecLinearColorToVec4(colors, 3);
+            ImVec4 sCol = VecLinearColorToVec4(colors, 4);
 
             if (ImGui::ColorEdit4("Ball Indicator Color", (float*)&bCol, ImGuiColorEditFlags_NoInputs)) {
                 AssignLinearColorFromVec4(bCol, 0);
@@ -523,6 +549,11 @@ void Freeplay_Trainer::RenderSettings() {
             if (ImGui::ColorEdit4("Directon Indicator Color", (float*)&dCol, ImGuiColorEditFlags_NoInputs)) {
                 AssignLinearColorFromVec4(dCol, 3);
             }
+            ImGui::SameLine();
+            if (ImGui::ColorEdit4("Spin Indicator Color", (float*)&sCol, ImGuiColorEditFlags_NoInputs)) {
+                AssignLinearColorFromVec4(sCol, 4);
+            }
+
 
 
             if (ImGui::Button("Revert All to Default")) {

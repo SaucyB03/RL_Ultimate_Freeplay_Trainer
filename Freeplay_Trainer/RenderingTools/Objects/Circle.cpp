@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "bakkesmod/wrappers/canvaswrapper.h"
 #include "Circle.h"
+#include "Cone.h"
 #include "Matrix3.h"
 #include "Frustum.h"
 #include "../Extra/RenderingMath.h"
@@ -8,16 +9,28 @@
 #include <vector>
 
 RT::Circle::Circle()
-	: location(Vector(0.0f,0.0f,0.0f)), orientation(Quat(1.0f,0.0f,0.0f,0.0f)), radius(100.0f), lineThickness(1.0f), piePercentage(1.0f), steps(16) {}
+	: location(Vector(0.0f,0.0f,0.0f)), orientation(Quat(1.0f,0.0f,0.0f,0.0f)), radius(100.0f), lineThickness(1.0f), piePercentage(0.75f), steps(16) {}
 
-RT::Circle::Circle(Vector loc, Quat rot, float rad)
-	: Circle() { location = loc; orientation = rot; radius = rad; }
+RT::Circle::Circle(Vector loc, Quat rot, float rad, float percent)
+	: Circle() {
+	location = loc; orientation = rot; radius = rad; piePercentage = percent;
+}
 
-void RT::Circle::Draw(CanvasWrapper canvas, Frustum &frustum) const
+void RT::Circle::Draw(CanvasWrapper canvas, Vector axis, Frustum& frustum, LinearColor color) const
 {
+	
+	canvas.SetColor(color);
 	std::vector<Vector> circlePoints;
-	Vector start = {1.0f,0.0f,0.0f};
-	Vector axis = {0.0f,0.0f,1.0f};
+	Vector second = axis;
+	if (axis.X == 0 && axis.Y == 0)
+		second.X += 1.0;
+	else {
+		second.Z += 1.0;
+	}
+	Vector start = Vector::cross(axis,second);
+	
+	start.normalize();
+
 
 	//Rename variables for easier readability
 	/*float radius = circle.radius;
@@ -83,17 +96,24 @@ void RT::Circle::Draw(CanvasWrapper canvas, Frustum &frustum) const
 			startPoint = location + circlePoints[i] * radius;
 			originalEnd = location + circlePoints[i + 1] * radius;
 		}
+		if (i == 0) {
+			Vector unit = (startPoint - originalEnd).getNormalized();
+			Cone arrow(startPoint, unit, 30, 50);
+			arrow.Draw(canvas, frustum, color);
+		}
 
 		if(i == circlePoints.size()-1)
 		{
 			startPoint = location + circlePoints[i] * radius;
 			originalEnd = location + circlePoints[0] * radius;
+			
 		}
 
 		calculatedEnd = originalEnd;
 		if(i == (size_t)newPointAmount - 1)
 		{
 			calculatedEnd = ((originalEnd - startPoint) * lastLinePercent) + startPoint;
+			
 		}
 
 		if(frustum.IsInFrustum(startPoint) && frustum.IsInFrustum(calculatedEnd))
@@ -125,6 +145,6 @@ void RT::Circle::DrawSegmented(CanvasWrapper canvas, Frustum &frustum, int segme
 	{
 		Quat rotAroundUp = AngleAxisRotation(rotSection * i, orientationMat.up);
 		circ.orientation = rotAroundUp * circ.orientation;
-		circ.Draw(canvas, frustum);
+		circ.Draw(canvas, { 0.0,0.0,1.0 }, frustum, {255.0,255.0,255.0,255.0});
 	}
 }

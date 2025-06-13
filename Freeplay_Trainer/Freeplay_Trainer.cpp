@@ -66,6 +66,7 @@ void Freeplay_Trainer::loadPresets() {
 	shootAt = j["shootAt"].get<vector<int>>();
 	timeTo = j["time"].get<vector<float>>();
 	leadOff = j["leadOff"].get<vector<float>>();
+	spin = j["spin"].get<vector<vector<float>>>();
 	mirror = j["mirror"].get< vector<vector<int>>>();
 	usingDirVar = j["usingDirVar"].get<vector<bool>>();
 	variance = j["variance"].get<vector<float>>();
@@ -93,6 +94,7 @@ void Freeplay_Trainer::savePresets() {
 	j["time"] = timeTo;
 	j["leadOff"] = leadOff;
 	j["direction"] = initDir;
+	j["spin"] = spin;
 	j["mirror"] = mirror;
 	j["usingDirVar"] = usingDirVar;
 	j["variance"] = variance;
@@ -108,6 +110,7 @@ void Freeplay_Trainer::savePresets() {
 
 	ofstream file(gameWrapper->GetDataFolder() / "Freeplay_Trainer" / "presetscfg.json");
 	file << j.dump(4);
+
 }
 
 void Freeplay_Trainer::resetPreset(int shotIndex) {
@@ -132,6 +135,7 @@ void Freeplay_Trainer::resetPreset(int shotIndex) {
 		shootAt = j["shootAt"].get<vector<int>>();
 		timeTo = j["time"].get<vector<float>>();
 		leadOff = j["leadOff"].get<vector<float>>();
+		spin = j["spin"].get<vector<vector<float>>>();
 		mirror = j["mirror"].get< vector<vector<int>>>();
 		usingDirVar = j["usingDirVar"].get<vector<bool>>();
 		variance = j["variance"].get<vector<float>>();
@@ -156,6 +160,7 @@ void Freeplay_Trainer::resetPreset(int shotIndex) {
 		shootAt.at(shotIndex) = j["shootAt"].get<vector<int>>().at(shotIndex);
 		timeTo.at(shotIndex) = j["time"].get<vector<float>>().at(shotIndex);
 		leadOff.at(shotIndex) = j["leadOff"].get<vector<float>>().at(shotIndex);
+		spin.at(shotIndex) = j["spin"].get<vector<vector<float>>>().at(shotIndex);
 		mirror.at(shotIndex) = j["mirror"].get< vector<vector<int>>>().at(shotIndex);
 		usingDirVar.at(shotIndex) = j["usingDirVar"].get<vector<bool>>().at(shotIndex);
 		variance.at(shotIndex) = j["variance"].get<vector<float>>().at(shotIndex);
